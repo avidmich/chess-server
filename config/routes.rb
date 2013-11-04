@@ -2,6 +2,12 @@ ChessServer::Application.routes.draw do
 
   root 'dashboard#index'
 
+  resources :users, shallow: true, defaults: {format: :json} do
+    resources :games
+    #resource :invitations   #todo: implement invitations resource under the same context
+  end
+
+
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
 
