@@ -22,4 +22,4 @@ config/initializers/secret_token.rb
 
 /.idea
 
-config/initializers/secret_key.rb
+/.env
