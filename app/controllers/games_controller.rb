@@ -30,7 +30,7 @@ class GamesController < ApplicationController
     respond_to do |format|
       if @game.save
         format.html { redirect_to @game, notice: 'Game was successfully created.' }
-        format.json { render action: 'show', status: :created, location: @game }
+        format.json { render json: @game, status: :created }
       else
         format.html { render action: 'new' }
         format.json { render json: @game.errors, status: :unprocessable_entity }
@@ -56,7 +56,6 @@ class GamesController < ApplicationController
       format.html { redirect_to user_games_url }
       format.json { head :no_content }
     end
-
   end
 
   private
