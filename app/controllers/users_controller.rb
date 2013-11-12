@@ -17,7 +17,7 @@ class UsersController < ApplicationController
             elsif params[:email] then
               User.find_by_email(params[:email])
             else
-              raise Exception 'not clear how to search for User: no id or email specified'
+              raise 'Not clear how to search for User: no id or email specified'
             end
 
 

@@ -1,13 +1,11 @@
 ChessServer::Application.routes.draw do
 
-  get '/users/search' => 'users#show'
+  get '/users/search' => 'users#show', defaults: { format: 'json' }
 
   resources :users, shallow: true, defaults: {format: :json} do
     resources :games
     #resource :invitations   #todo: implement invitations resource under the same context
   end
-
-  resources :moves, defaults: {format: :json}
 
   root 'dashboard#index'
 

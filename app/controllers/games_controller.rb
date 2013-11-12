@@ -65,6 +65,6 @@ class GamesController < ApplicationController
   end
 
   def game_params
-    params.require(:game).permit(:event, :site, :date_started, :round, :white_id, :black_id, :result, :text)
+    params.require(:game).permit(:event, :site, :date_started, :round, :white_id, :black_id, :result, :text, :actual_game, :type)
   end
 end
