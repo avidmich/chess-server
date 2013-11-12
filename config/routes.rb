@@ -1,29 +1,16 @@
 ChessServer::Application.routes.draw do
 
-  #users routing aliases
-  get '/new', to: 'users#new'
-
-  post '/', to: 'users#create'
-  patch '/:id', to: 'users#update'
-  put '/:id', to: 'users#update'
-  delete '/:id', to: 'users#destroy'
-
-  #games routing aliases
-  get '/:id/games', to: 'games#index'
-  post '/:id/games', to: 'games#create'
-  get '/:id/games/new', to: 'games#new'
-
-  resources :moves
-
-  root 'dashboard#index'
+  get '/users/search' => 'users#show'
 
   resources :users, shallow: true, defaults: {format: :json} do
     resources :games
     #resource :invitations   #todo: implement invitations resource under the same context
   end
 
+  resources :moves, defaults: {format: :json}
 
-  get '/:id', to: 'users#show'
+  root 'dashboard#index'
+
 
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".

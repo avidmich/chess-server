@@ -33,6 +33,7 @@ end
 group :development, :test do
   gem 'sqlite3'
   gem 'rspec-rails', '~> 2.0'
+  gem 'meta_request'
 end
 
 group :doc do

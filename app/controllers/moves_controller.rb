@@ -5,6 +5,11 @@ class MovesController < ApplicationController
   # GET /moves.json
   def index
     @moves = Move.all
+
+    respond_to do |format|
+      format.html {}
+      format.json { render json: @moves }
+    end
   end
 
   # GET /moves/1

@@ -1,5 +1,5 @@
 class UsersController < ApplicationController
-  before_action :set_user, only: [:show, :edit, :update, :destroy]
+  before_action :set_user, only: [:edit, :update, :destroy]
 
   def index
     @users = User.all
@@ -11,6 +11,16 @@ class UsersController < ApplicationController
   end
 
   def show
+
+    @user = if params[:id] then
+              User.find(params[:id])
+            elsif params[:email] then
+              User.find_by_email(params[:email])
+            else
+              raise Exception 'not clear how to search for User: no id or email specified'
+            end
+
+
     respond_to do |format|
       format.html {}
       format.json { render json: @user }
@@ -21,7 +31,7 @@ class UsersController < ApplicationController
     @user = User.new
     respond_to do |format|
       format.html {}
-      format.json { render json: @user}
+      format.json { render json: @user }
     end
   end
 
