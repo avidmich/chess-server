@@ -2,12 +2,11 @@ class GamesController < ApplicationController
   before_action :set_game, only: [:show, :edit, :update, :destroy]
 
   def index
-    @user = User.find(params[:user_id])
-    @games = @user.games_as_white  #todo merge with games_as_black
-
+    @user_id = params[:user_id]
+    @user_games = Game.where("white_id = :white_player OR black_id = :black_player", {white_player: @user_id, black_player: @user_id}).limit(params[:limit]).offset(params[:offset]).order('date_started')
     respond_to do |format|
       format.html {}
-      format.json { render json: @games }
+      format.json { render json: @user_games, only: [:id, :event, :white_id, :black_id, :game_type]} #filtering output for list of games
     end
   end
 
