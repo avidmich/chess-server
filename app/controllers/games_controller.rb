@@ -1,19 +1,21 @@
 class GamesController < ApplicationController
   before_action :set_game, only: [:show, :edit, :update, :destroy]
 
+  SHORT_GAME_VIEW = [:id, :game_type, :white_player_id, :black_player_id, :actual_game]
+
   def index
     @user_id = params[:user_id]
-    @user_games = Game.where("white_id = :white_player OR black_id = :black_player", {white_player: @user_id, black_player: @user_id}).limit(params[:limit]).offset(params[:offset]).order('date_started')
+    @user_games = Game.where("white_player_id = :white_player OR black_player_id = :black_player", {white_player: @user_id, black_player: @user_id}).limit(params[:limit]).offset(params[:offset]).order('date_started')
     respond_to do |format|
       format.html {}
-      format.json { render json: @user_games, only: [:id, :event, :white_id, :black_id, :game_type]} #filtering output for list of games
+      format.json { render json: @user_games, only: SHORT_GAME_VIEW } #filtering output for list of games
     end
   end
 
   def show
     respond_to do |format|
       format.html {}
-      format.json { render json: @game }
+      format.json { render json: @game, only: SHORT_GAME_VIEW }
     end
   end
 
@@ -64,6 +66,8 @@ class GamesController < ApplicationController
   end
 
   def game_params
-    params.require(:game).permit(:event, :site, :date_started, :round, :white_id, :black_id, :result, :text, :actual_game, :type)
+    params.require(:game).permit(:event, :site, :date_started, :round, :white_player_id, :black_player_id, :result, :text, :game_type, :actual_game).tap do |white_list|
+      white_list[:actual_game] = params[:game][:actual_game] #this construction allow us to accept any nested json structure inside :actual_game
+    end
   end
 end
