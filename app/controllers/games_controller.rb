@@ -1,10 +1,11 @@
 class GamesController < ApplicationController
-  before_action :set_game, only: [:show, :edit, :update, :destroy]
+  before_action :set_game, only: [:show, :edit, :update, :destroy, :add_moves]
 
   SHORT_GAME_VIEW = [:id, :game_type, :white_player_id, :black_player_id, :actual_game]
 
   def index
     @user_id = params[:user_id]
+    #consider moving this logic to service layer
     @user_games = Game.where("white_player_id = :white_player OR black_player_id = :black_player", {white_player: @user_id, black_player: @user_id}).limit(params[:limit]).offset(params[:offset]).order('date_started')
     respond_to do |format|
       format.html {}
@@ -34,6 +35,20 @@ class GamesController < ApplicationController
         format.json { render json: @game, status: :created }
       else
         format.html { render action: 'new' }
+        format.json { render json: @game.errors, status: :unprocessable_entity }
+      end
+    end
+  end
+
+  def add_moves
+    @actual_game_record = @game.actual_game
+    @actual_game_record[:board] = params[:board]
+    respond_to do |format|
+      if @game.update_attribute(:actual_game, @actual_game_record)
+        format.html { redirect_to @game, notice: 'Move was successfully added.' }
+        format.json { head :no_content }
+      else
+        format.html { render action: 'edit' }
         format.json { render json: @game.errors, status: :unprocessable_entity }
       end
     end
