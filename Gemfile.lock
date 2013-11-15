@@ -39,6 +39,8 @@ GEM
     diff-lcs (1.2.4)
     erubis (2.7.0)
     execjs (2.0.2)
+    foreigner (1.6.0)
+      activerecord (>= 3.0.0)
     hike (1.2.3)
     i18n (0.6.5)
     jbuilder (1.5.2)
@@ -139,6 +141,7 @@ PLATFORMS
 
 DEPENDENCIES
   coffee-rails (~> 4.0.0)
+  foreigner
   jbuilder (~> 1.2)
   jquery-rails
   meta_request
