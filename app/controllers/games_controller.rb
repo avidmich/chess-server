@@ -41,15 +41,22 @@ class GamesController < ApplicationController
   end
 
   def add_moves
-    @actual_game_record = @game.actual_game
-    @actual_game_record[:board] = params[:board]
-    respond_to do |format|
-      if @game.update_attribute(:actual_game, @actual_game_record)
-        format.html { redirect_to @game, notice: 'Move was successfully added.' }
-        format.json { render json: @game.actual_game, status: :ok }
-      else
-        format.html { render action: 'edit' }
-        format.json { render json: @game.errors, status: :unprocessable_entity }
+    if params[:board]
+      @actual_game_record = @game.actual_game
+      @actual_game_record[:board] = params[:board]
+      respond_to do |format|
+        if @game.update_attribute(:actual_game, @actual_game_record)
+          format.html { redirect_to @game, notice: 'Move was successfully added.' }
+          format.json { render json: @game.actual_game, status: :ok }
+        else
+          format.html { render action: 'edit' }
+          format.json { render json: @game.errors, status: :unprocessable_entity }
+        end
+      end
+    else
+      @game.errors.add(:board, 'Moves record was not found. If you are using JSON request body, check that \'Content-Type\' header is set to \'application/json\' value')
+      respond_to do |format|
+        format.json { render json: @game.errors, status: :bad_request }
       end
     end
   end
