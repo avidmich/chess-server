@@ -25,8 +25,11 @@ gem 'turbolinks'
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
 gem 'jbuilder', '~> 1.2'
 
-#Add foreign keys constraints to the database думуд
+#Add foreign keys constraints to the database level
 gem 'foreigner'
+
+#Add XMPP support for bidirectional GCM communication
+gem 'blather'
 
 group :production do
   gem 'pg'
