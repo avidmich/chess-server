@@ -30,12 +30,16 @@ class GamesController < ApplicationController
   def create
     @game = Game.new(game_params)
     respond_to do |format|
-      if @game.save
-        format.html { redirect_to @game, notice: 'Game was successfully created.' }
-        format.json { render json: @game, status: :created }
-      else
-        format.html { render action: 'new' }
-        format.json { render json: @game.errors, status: :unprocessable_entity }
+      begin
+        if @game.save
+          format.html { redirect_to @game, notice: 'Game was successfully created.' }
+          format.json { render json: @game, status: :created }
+        else
+          format.html { render action: 'new' }
+          format.json { render json: @game.errors, status: :unprocessable_entity }
+        end
+      rescue => ex
+        format.json { render json: {error: ex, message: ex.message}, status: :unprocessable_entity }
       end
     end
   end
@@ -65,7 +69,7 @@ class GamesController < ApplicationController
     respond_to do |format|
       if @game.update(game_params)
         format.html { redirect_to @game, notice: 'Game was successfully updated.' }
-        format.json { render json: @game, status: :ok}
+        format.json { render json: @game, status: :ok }
       else
         format.html { render action: 'edit' }
         format.json { render json: @game.errors, status: :unprocessable_entity }

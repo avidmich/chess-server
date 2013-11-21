@@ -16,10 +16,14 @@ class DevicesController < ApplicationController
   # POST /users/1/unregister
   def unregister
     respond_to do |format|
+      begin
       if @device && @device.destroy
         format.json { render json: @device, status: :ok }
       else
         format.json { render json: {error: 'Device with given registration_id not found or operation could not be processed'}, status: :unprocessable_entity }
+      end
+      rescue => ex
+        format.json {render json: {error: ex}, status: :unprocessable_entity }
       end
     end
   end
