@@ -2,6 +2,8 @@ ChessServer::Application.routes.draw do
 
   get '/users/search' => 'users#show', defaults: { format: 'json' }
   post '/games/:id/moves' => 'games#add_moves', defaults: {format: 'json'}
+  post '/users/:user_id/register' => 'devices#register', defaults: {format: 'json'}
+  post '/users/:user_id/unregister' => 'devices#unregister', defaults: {format: 'json'}
 
   resources :users, shallow: true, defaults: {format: :json} do
     resources :games
