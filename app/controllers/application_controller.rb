@@ -4,6 +4,17 @@ class ApplicationController < ActionController::Base
   #protect_from_forgery with: :exception
 
   #before_action LoginFilter
+=begin
+  before_action :authenticate
+
+  private
+  def authenticate
+    authenticate_or_request_with_http_token do |token, options|
+      #Here we request Google+ server with provided token and after that
+      token == TOKEN
+    end
+  end
+=end
 end
 
 class LoginFilter
