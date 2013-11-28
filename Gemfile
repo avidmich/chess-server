@@ -32,7 +32,7 @@ gem 'foreigner'
 gem 'blather'
 
 #Use Google+ client libs for accessing Google+ APIs
-gem 'google-api-client'
+gem "google-api-client", "~> 0.6.4", :require => 'google/api_client'
 
 group :production do
   gem 'pg'
