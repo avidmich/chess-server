@@ -31,6 +31,9 @@ gem 'foreigner'
 #Add XMPP support for bidirectional GCM communication
 gem 'blather'
 
+#Use Google+ client libs for accessing Google+ APIs
+gem 'google-api-client'
+
 group :production do
   gem 'pg'
   gem 'rails_12factor'

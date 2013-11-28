@@ -10,7 +10,7 @@ module GCMCommunicator
     client.run
   end
 
-  setup '649688438031@gcm.googleapis.com', 'AIzaSyAZgIX3iVoD63_aaRuWmmlrJbsHMgQvZSc', 'gcm.googleapis.com', 5235, './certs'
+  setup '1098077652074@gcm.googleapis.com', 'AIzaSyCAPZQ7GDiVXSdLPMeYNhTz6hbO6Q3Rdao', 'gcm.googleapis.com', 5235, './certs'
 
   subscription :request? do |s|
     write_to_stream s.approve!
@@ -22,7 +22,7 @@ module GCMCommunicator
     say s.from, 'ping'
   end
 
-  message :chat?, :body => 'pong' do |m|
+  message :chat?, :body do |m|
     puts "ping!"
     @message = {
         to: "#{@registration_id}",
@@ -34,6 +34,7 @@ module GCMCommunicator
     say m.from, "<message><gcm xmlns='google:mobile:data'>#{@message}</gcm></message>"
   end
 
+  say '1098077652074@gcm.googleapis.com', 'Hi there'
 end
 
 trap(:INT) { EM.stop }
