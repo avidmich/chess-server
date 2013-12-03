@@ -28,7 +28,7 @@ Google Auth setup
 
 SSL Setup
 ==============
-On some machines it is possible that CA Certificates are not installed properly (you will se and exception when trying to authorize at Google)
+On some machines it is possible that CA Certificates are not installed properly (you will see an exception when trying to authorize at Google)
 In that case you have to download .pem file from  http://curl.haxx.se/ca/cacert.pem
 Set environment variable in Rails configuration: SSL_CERT_FILE=<your cacert.pem location>, so that it will be available from ENV[SSL_CERT_FILE]
 
