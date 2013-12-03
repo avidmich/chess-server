@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20131129230217) do
+ActiveRecord::Schema.define(version: 20131203064805) do
 
   create_table "devices", force: true do |t|
     t.string   "registration_id"
@@ -33,6 +33,7 @@ ActiveRecord::Schema.define(version: 20131129230217) do
     t.datetime "updated_at"
     t.string   "game_type"
     t.text     "actual_game"
+    t.datetime "date_finished"
   end
 
   create_table "users", force: true do |t|

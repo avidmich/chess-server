@@ -1,7 +1,7 @@
 class GamesController < ApplicationController
   before_action :set_game, only: [:show, :edit, :update, :destroy, :add_moves]
 
-  SHORT_GAME_VIEW = [:id, :game_type, :white_player_id, :black_player_id, :actual_game]
+  SHORT_GAME_VIEW = [:id, :game_type, :white_player_id, :black_player_id, :date_started, :date_finished, :actual_game]
 
   def index
     @user_id = params[:user_id]
