@@ -11,11 +11,25 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20131203064805) do
+ActiveRecord::Schema.define(version: 20131204061959) do
 
   create_table "devices", force: true do |t|
     t.string   "registration_id"
     t.integer  "user_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "feedbacks", force: true do |t|
+    t.string   "type"
+    t.text     "memo"
+    t.string   "app_version"
+    t.string   "os_version"
+    t.string   "sdk_version"
+    t.string   "manufacturer"
+    t.string   "model"
+    t.string   "username"
+    t.string   "email"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
@@ -34,6 +48,7 @@ ActiveRecord::Schema.define(version: 20131203064805) do
     t.string   "game_type"
     t.text     "actual_game"
     t.datetime "date_finished"
+    t.string   "game_status"
   end
 
   create_table "users", force: true do |t|

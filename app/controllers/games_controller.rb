@@ -1,12 +1,12 @@
 class GamesController < ApplicationController
   before_action :set_game, only: [:show, :edit, :update, :destroy, :add_moves]
 
-  SHORT_GAME_VIEW = [:id, :game_type, :white_player_id, :black_player_id, :date_started, :date_finished, :actual_game]
+  SHORT_GAME_VIEW = [:id, :game_type, :game_status, :white_player_id, :black_player_id, :date_started, :date_finished, :actual_game]
 
   def index
     @user_id = params[:user_id]
     #consider moving this logic to service layer
-    @user_games = Game.where("white_player_id = :white_player OR black_player_id = :black_player", {white_player: @user_id, black_player: @user_id}).limit(params[:limit]).offset(params[:offset]).order('date_started')
+    @user_games = Game.where('white_player_id = :white_player OR black_player_id = :black_player', {white_player: @user_id, black_player: @user_id}).limit(params[:limit]).offset(params[:offset]).order('date_started')
     respond_to do |format|
       format.html {}
       format.json { render json: @user_games, only: SHORT_GAME_VIEW } #filtering output for list of games
@@ -92,7 +92,7 @@ class GamesController < ApplicationController
   end
 
   def game_params
-    params.require(:game).permit(:event, :site, :date_started, :round, :white_player_id, :black_player_id, :result, :text, :game_type, :actual_game).tap do |white_list|
+    params.require(:game).permit(:event, :site, :date_started, :round, :white_player_id, :black_player_id, :result, :text, :game_type, :actual_game, :game_status).tap do |white_list|
       white_list[:actual_game] = params[:game][:actual_game] #this construction allow us to accept any nested json structure inside :actual_game
     end
   end

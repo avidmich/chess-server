@@ -10,6 +10,8 @@ ChessServer::Application.routes.draw do
     #resource :invitations   #todo: implement invitations resource under the same context
   end
 
+  resources :feedbacks, defaults: {format: :json}
+
   root 'dashboard#index'
 
 
