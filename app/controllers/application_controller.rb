@@ -16,12 +16,15 @@ class ApplicationController < ActionController::Base
   def authenticate
     authenticate_or_request_with_http_token do |one_time_token, options|
       #convert client secrets to authorization object
+      Rails.logger.level = 0
+      logger.debug "One time token received: #{one_time_token}"
       authorization = GoogleApiClientSecrets.to_authorization
       authorization.code = one_time_token
 
       begin
         authorization.fetch_access_token!
-      rescue Signet::AuthorizationError
+      rescue Signet::AuthorizationError => e
+        logger.debug "Authorization error occurred: #{e.message}"
         next false #next is like 'return' but 'return' goes out of 'authenticate' method, while 'next' returns only the closure
       end
 
@@ -30,8 +33,11 @@ class ApplicationController < ActionController::Base
       # You can read the Google user ID in the ID token.
       # "sub" represents the ID token subscriber which in our case is the user ID.
       google_plus_id = auth_info['sub']
+      logger.debug "Google authorization procedure successful with Google+ ID: #{google_plus_id}"
       #todo: consider add user_id to the request. In that case it is not sufficient to just add id: params[:user_id], since some requests doesn't contain :user_id param (but contain :id)
       @current_user = User.find_by(google_plus_id: google_plus_id)
+      logger.debug "Internal authorization procedure successful, current user: #{@current_user.to_json}"
+      Rails.logger.level = 1
       @current_user
     end
   end
