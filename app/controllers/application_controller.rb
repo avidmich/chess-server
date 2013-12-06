@@ -7,7 +7,7 @@ class ApplicationController < ActionController::Base
   #For APIs, you may want to use :null_session instead.
   #protect_from_forgery with: :exception
 
-  before_action :authenticate
+  #before_action :authenticate
 
   private
   #This method gets token from android client (using Authorization request header) and asks Google+ services for access token and user identity
