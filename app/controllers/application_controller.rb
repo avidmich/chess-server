@@ -19,6 +19,7 @@ class ApplicationController < ActionController::Base
       Rails.logger.level = 0
       logger.debug "One time token received: #{one_time_token}"
       authorization = GoogleApiClientSecrets.to_authorization
+      logger.debug "Redirect URIs: #{authorization.redirect_uri}"
       authorization.code = one_time_token
 
       begin
