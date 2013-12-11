@@ -7,13 +7,21 @@ class ApplicationController < ActionController::Base
   #For APIs, you may want to use :null_session instead.
   #protect_from_forgery with: :exception
 
-  #before_action :authenticate
+  #before_action :verify_authentication
+  before_action :log_authentication
 
   private
+
+  def log_authentication
+    token = request.headers["Authorization"]
+    logger.warn "token = #{token}"
+  end
+
+
   #This method gets token from android client (using Authorization request header) and asks Google+ services for access token and user identity
   #After that it matches obtained user identity with the same value stored in our database.
   #If user is found it is set to the @current_user variable for further work, if not - 401 response is returned to the client
-  def authenticate
+  def verify_authentication
     authenticate_or_request_with_http_token do |one_time_token, options|
       #convert client secrets to authorization object
       Rails.logger.level = 0
