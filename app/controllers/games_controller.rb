@@ -98,7 +98,7 @@ class GamesController < ApplicationController
 
 
     respond_to do |format|
-      if @game.update_attribute(:actual_game, @actual_game_record)
+      if @game.update_attributes({actual_game: @actual_game_record, game_status: params[:event]} )
         format.html { redirect_to @game, notice: 'Move was successfully added.' }
         format.json { render json: @game.actual_game, status: :ok }
       else

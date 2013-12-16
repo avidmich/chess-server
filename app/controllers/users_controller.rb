@@ -12,12 +12,14 @@ class UsersController < ApplicationController
 
   def show
 
-    @user = if params[:id] then
+    @user = if params[:id]
               User.find(params[:id])
-            elsif params[:email] then
+            elsif params[:email]
               User.find_by_email(params[:email])
+            elsif params[:gplus_id]
+              User.find_by_google_plus_id(params[:gplus_id])
             else
-              raise 'Not clear how to search for User: no id or email specified'
+              raise 'There is no parameters to search for User: no id or email specified'
             end
 
 
