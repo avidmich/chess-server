@@ -30,6 +30,8 @@ gem 'foreigner'
 
 #Add XMPP support for bidirectional GCM communication
 gem 'blather'
+#Add support for GCM HTTP-based communication
+gem 'gcm'
 
 #Use Google+ client libs for accessing Google+ APIs
 gem "google-api-client", "~> 0.6.4", :require => 'google/api_client'
