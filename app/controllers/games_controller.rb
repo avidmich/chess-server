@@ -60,23 +60,15 @@ class GamesController < ApplicationController
     @actual_game_record[:board] = params[:board]
 
     #Obtain opponent registration id
-    device = Device.find_by_user_id(params[:user_id])
+    registration_ids = Device.where(user_id: params[:user_id]).pluck(:registration_id)
     #response with error in case device was not found
-    unless device
-      render json: {error: 'Registration ID error: no device found'}, status: :conflict
-      return
-    end
-
-    registration_id = device.registration_id
-
-    unless registration_id
-      render json: {error: 'Registration ID error: no registration_id found'}, status: :conflict
+    unless registration_ids and registration_ids.any?
+      render json: {error: 'Registration ID error: no device registration_id found'}, status: :conflict
       return
     end
 
     #Send update to opponent device
     gcm = GCM.new(GCM_API_KEY)
-    registration_ids = [registration_id]
     options = {
         data: {
             game_id: @game.id,
@@ -90,9 +82,9 @@ class GamesController < ApplicationController
 
     handle_canonical_id(device, google_response) if google_response['canonical_ids'] != 0
 
-    unless response[:response] == 'success' and google_response['failure'] == 0
+    unless response[:response] == 'success' and google_response['failure'] == 0 or google_response['success'] > 0
       #some error occurred
-      render json: {error: "GCM error: #{google_response['results'][0]['error']}"}, status: :conflict
+      render json: {error: "GCM error: #{google_response['results'].select{|f| f['error']}}"}, status: :conflict
       return
     end
 
