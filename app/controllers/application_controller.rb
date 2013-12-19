@@ -1,6 +1,8 @@
 require 'google/api_client'
 require 'google/api_client/auth/installed_app'
 require 'google_api_client_secrets'
+require 'openssl'
+require 'base64'
 class ApplicationController < ActionController::Base
 
   #Prevent CSRF attacks by raising an exception.
@@ -8,13 +10,29 @@ class ApplicationController < ActionController::Base
   #protect_from_forgery with: :exception
 
   #before_action :verify_authentication
-  before_action :log_authentication
+  before_action :authenticate
 
   private
 
-  def log_authentication
-    token = request.headers["Authorization"]
-    logger.warn "token = #{token}"
+  def authenticate
+    authenticate_or_request_with_http_token do |signature, options|
+       verify(signature, request.body)
+    end
+  end
+
+  def encode(message)
+    secret_token = 'arrow labs chess secret'
+
+    sha1 = OpenSSL::Digest::Digest.new('sha1')
+    tag = OpenSSL::HMAC.hexdigest(sha1, secret_token, message)
+    Base64.encode64(tag)
+  end
+
+  def verify(signature, message)
+    #this is a time attack blocker
+    expected = Digest::SHA1.hexdigest(encode(message))
+    actual = Digest::SHA1.hexdigest(signature)
+    expected == actual
   end
 
 
