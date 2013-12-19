@@ -19,9 +19,9 @@ class ApplicationController < ActionController::Base
     authenticate_or_request_with_http_token do |signature, options|
       logger.warn "Signature obtained: #{signature}"
       begin
-      logger.warn "Encoded signature: #{encode(request.body)}"
+      logger.warn "Encoded signature: #{encode(request.body.string)}"
       rescue => ex
-        logger.warn "Error during encoding: #{request.body}"
+        logger.warn "Error during encoding: #{request.body.string}"
       end
       #verify(signature, request.body)
       true
