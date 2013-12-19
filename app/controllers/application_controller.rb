@@ -17,14 +17,7 @@ class ApplicationController < ActionController::Base
 
   def authenticate
     authenticate_or_request_with_http_token do |signature, options|
-      logger.warn "Signature obtained: #{signature}"
-      begin
-      logger.warn "Encoded signature: #{encode(request.body.string)}"
-      rescue => ex
-        logger.warn "Error during encoding: #{request.body.string}"
-      end
-      #verify(signature, request.body)
-      true
+      verify(signature, request.body.string)
     end
   end
 
@@ -32,14 +25,19 @@ class ApplicationController < ActionController::Base
     secret_token = 'arrow labs chess secret'
 
     sha1 = OpenSSL::Digest::Digest.new('sha1')
-    tag = OpenSSL::HMAC.hexdigest(sha1, secret_token, message)
-    Base64.encode64(tag)
+    tag = OpenSSL::HMAC.digest(sha1, secret_token, message)
+    Base64.strict_encode64(tag).gsub!(/=+$/, '')
   end
 
   def verify(signature, message)
+    logger.warn "Actual signature: #{signature}"
+    encoded = encode(message)
+    logger.warn "Expected signature: #{encoded}"
     #this is a time attack blocker
-    expected = Digest::SHA1.hexdigest(encode(message))
     actual = Digest::SHA1.hexdigest(signature)
+    logger.warn "Actual encoded signature: #{actual}"
+    expected = Digest::SHA1.hexdigest(encoded)
+    logger.warn "Expected encoded signature: #{expected}"
     expected == actual
   end
 
