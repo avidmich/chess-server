@@ -60,7 +60,8 @@ class GamesController < ApplicationController
     @actual_game_record[:board] = params[:board]
 
     #Obtain opponent registration id
-    registration_ids = Device.where(user_id: params[:user_id]).pluck(:registration_id)
+    devices = Device.where(user_id: params[:user_id])
+    registration_ids = devices.pluck(:registration_id)
     #response with error in case device was not found
     unless registration_ids and registration_ids.any?
       render json: {error: 'Registration ID error: no device registration_id found'}, status: :conflict
@@ -69,28 +70,31 @@ class GamesController < ApplicationController
 
     #Send update to opponent device
     gcm = GCM.new(GCM_API_KEY)
+    opponent = find_opponent @game, params[:user_id]
     options = {
         data: {
             game_id: @game.id,
             event: params[:event],
-            user_id: params[:user_id],
+            opponent_id: opponent.id,
+            opponent_first_name: opponent.first_name,
+            opponent_last_name: opponent.last_name,
             board: params[:board]
         }, collapse_key: "updated_move"
     }
     response = gcm.send_notification(registration_ids, options)
     google_response = JSON.parse(response[:body])
 
-    handle_canonical_id(device, google_response) if google_response['canonical_ids'] != 0
+    handle_canonical_id(devices, google_response) if google_response['canonical_ids'] != 0
 
     unless response[:response] == 'success' and google_response['failure'] == 0 or google_response['success'] > 0
       #some error occurred
-      render json: {error: "GCM error: #{google_response['results'].select{|f| f['error']}}"}, status: :conflict
+      render json: {error: "GCM error: #{google_response['results'].select { |f| f['error'] }}"}, status: :conflict
       return
     end
 
 
     respond_to do |format|
-      if @game.update_attributes({actual_game: @actual_game_record, game_status: params[:event]} )
+      if @game.update_attributes({actual_game: @actual_game_record, game_status: params[:event]})
         format.html { redirect_to @game, notice: 'Move was successfully added.' }
         format.json { render json: @game.actual_game, status: :ok }
       else
@@ -122,8 +126,17 @@ class GamesController < ApplicationController
   end
 
   private
-  def handle_canonical_id(device, google_response )
-    device.update_attribute(:registration_id, google_response['results'][0]['registration_id'])
+  def find_opponent(game, user_id)
+    game.white_player.id == user_id ? game.white_player : game.black_player
+  end
+
+  def handle_canonical_id(devices, google_response)
+    if (devices || []).each_index do |i|
+      if google_response['results'][i]['registration_id']
+        devices[i].update_attribute(:registration_id, google_response['results'][i]['registration_id'])
+      end
+    end
+    end
   end
 
   def set_game
