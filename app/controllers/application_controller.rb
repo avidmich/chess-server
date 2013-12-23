@@ -21,11 +21,10 @@ class ApplicationController < ActionController::Base
     end
   end
 
+  SECRET_TOKEN = 'arrow labs chess secret'
   def encode(message)
-    secret_token = 'arrow labs chess secret'
-
     sha1 = OpenSSL::Digest::Digest.new('sha1')
-    tag = OpenSSL::HMAC.digest(sha1, secret_token, message)
+    tag = OpenSSL::HMAC.digest(sha1, SECRET_TOKEN, message)
     Base64.strict_encode64(tag).gsub!(/=+$/, '')
   end
 
