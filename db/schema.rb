@@ -11,7 +11,10 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20131204061959) do
+ActiveRecord::Schema.define(version: 20131224150945) do
+
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "plpgsql"
 
   create_table "devices", force: true do |t|
     t.string   "registration_id"
@@ -19,6 +22,8 @@ ActiveRecord::Schema.define(version: 20131204061959) do
     t.datetime "created_at"
     t.datetime "updated_at"
   end
+
+  add_index "devices", ["registration_id", "user_id"], name: "index_devices_on_registration_id_and_user_id", unique: true, using: :btree
 
   create_table "feedbacks", force: true do |t|
     t.string   "type"
@@ -52,12 +57,15 @@ ActiveRecord::Schema.define(version: 20131204061959) do
   end
 
   create_table "users", force: true do |t|
-    t.string   "google_plus_id"
+    t.string   "gplus_id"
     t.string   "first_name"
     t.string   "last_name"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "email"
   end
+
+  add_foreign_key "games", "users", name: "fk_game_black_player", column: "black_player_id", dependent: :delete
+  add_foreign_key "games", "users", name: "fk_game_white_player", column: "white_player_id", dependent: :delete
 
 end

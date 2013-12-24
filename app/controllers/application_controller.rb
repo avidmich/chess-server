@@ -64,10 +64,10 @@ class ApplicationController < ActionController::Base
       auth_info = authorization.decoded_id_token
       # You can read the Google user ID in the ID token.
       # "sub" represents the ID token subscriber which in our case is the user ID.
-      google_plus_id = auth_info['sub']
-      logger.debug "Google authorization procedure successful with Google+ ID: #{google_plus_id}"
+      gplus_id = auth_info['sub']
+      logger.debug "Google authorization procedure successful with Google+ ID: #{gplus_id}"
       #todo: consider add user_id to the request. In that case it is not sufficient to just add id: params[:user_id], since some requests doesn't contain :user_id param (but contain :id)
-      @current_user = User.find_by(google_plus_id: google_plus_id)
+      @current_user = User.find_by(gplus_id: gplus_id)
       logger.debug "Internal authorization procedure successful, current user: #{@current_user.to_json}"
       Rails.logger.level = 1
       @current_user

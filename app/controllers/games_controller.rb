@@ -61,7 +61,8 @@ class GamesController < ApplicationController
     @actual_game_record[:board] = params[:board]
 
     #Obtain opponent registration id
-    devices = Device.where(user_id: params[:user_id])
+    user_id = params[:user_id]
+    devices = Device.where(user_id: user_id)
     registration_ids = devices.pluck(:registration_id)
     #response with error in case device was not found
     unless registration_ids and registration_ids.any?
@@ -71,7 +72,7 @@ class GamesController < ApplicationController
 
     #Send update to opponent device
     gcm = GCM.new(GCM_API_KEY)
-    opponent = find_opponent @game, params[:user_id]
+    opponent = find_opponent @game, user_id
     options = {
         data: {
             game_id: @game.id,
@@ -85,7 +86,7 @@ class GamesController < ApplicationController
     response = gcm.send_notification(registration_ids, options)
     google_response = JSON.parse(response[:body])
 
-    handle_canonical_id(devices, google_response) if google_response['canonical_ids'] != 0
+    handle_canonical_ids(devices, registration_ids, google_response) if google_response['canonical_ids'] != 0
 
     unless response[:response] == 'success' and google_response['failure'] == 0 or google_response['success'] > 0
       #some error occurred
@@ -135,10 +136,17 @@ class GamesController < ApplicationController
     game.white_player.id == user_id ? game.white_player : game.black_player
   end
 
-  def handle_canonical_id(devices, google_response)
+  def handle_canonical_ids(devices, registration_ids, google_response)
     if (devices || []).each_index do |i|
-      if google_response['results'][i]['registration_id']
-        devices[i].update_attribute(:registration_id, google_response['results'][i]['registration_id'])
+      canonical_id = google_response['results'][i]['registration_id']
+      if canonical_id
+        if registration_ids.include?(canonical_id)
+          #this means that we already have canonical_id stored in database, so it is just enough to remove old registration id from db
+          devices[i].destroy
+        else
+          #if there is no right registration_id in database, we have to update current registration id, that is obsolete with the new one, that was provided by google
+          devices[i].update_attribute(:registration_id, canonical_id)
+        end
       end
     end
     end

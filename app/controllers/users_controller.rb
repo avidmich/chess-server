@@ -17,7 +17,7 @@ class UsersController < ApplicationController
             elsif params[:email]
               User.find_by_email(params[:email])
             elsif params[:gplus_id]
-              User.find_by_google_plus_id(params[:gplus_id])
+              User.find_by_gplus_id(params[:gplus_id])
             else
               raise 'There is no parameters to search for User: no id or email specified'
             end
@@ -80,6 +80,6 @@ class UsersController < ApplicationController
   end
 
   def user_params
-    params.require(:user).permit(:email, :first_name, :last_name)
+    params.require(:user).permit(:email, :first_name, :last_name, :gplus_id)
   end
 end
