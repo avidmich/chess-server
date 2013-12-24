@@ -18,17 +18,17 @@ module GCMCommunicator
 
 
   status :from => /pong@your\.jabber\.server/ do |s|
-    puts "serve!"
+    puts 'serve!'
     say s.from, 'ping'
   end
 
   message :chat?, :body do |m|
-    puts "ping!"
+    puts 'ping!'
     @message = {
         to: "#{@registration_id}",
-        message_id: "m-1366082849205",
-        data: {hello: "world"},
-        time_to_live: "600",
+        message_id: 'm-1366082849205',
+        data: {hello: 'world'},
+        time_to_live: '600',
         delay_while_idle: true
     }
     say m.from, "<message><gcm xmlns='google:mobile:data'>#{@message}</gcm></message>"

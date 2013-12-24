@@ -16,7 +16,7 @@ class ApplicationController < ActionController::Base
 
 
   def authenticate
-    authenticate_or_request_with_http_token do |signature, options|
+    authenticate_or_request_with_http_token do |signature, _|
       verify(signature, request.body.string)
     end
   end
@@ -45,7 +45,7 @@ class ApplicationController < ActionController::Base
   #After that it matches obtained user identity with the same value stored in our database.
   #If user is found it is set to the @current_user variable for further work, if not - 401 response is returned to the client
   def verify_authentication
-    authenticate_or_request_with_http_token do |one_time_token, options|
+    authenticate_or_request_with_http_token do |one_time_token, _|
       #convert client secrets to authorization object
       Rails.logger.level = 0
       logger.debug "One time token received: #{one_time_token}"

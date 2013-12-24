@@ -20,10 +20,10 @@ class GCMCommunicator
     # Check that the last message we received was the expected one.
     # This is a little redundant (in the absence of a timeout) as we will
     # only get this far if we close the client by finding the expected_im.
-    if (@received_messages[-1] == expected_im)
-      return true
+    if @received_messages[-1] == expected_im
+      true
     else
-      return false
+      false
     end
   end
 

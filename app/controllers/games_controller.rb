@@ -80,7 +80,7 @@ class GamesController < ApplicationController
             opponent_first_name: opponent.first_name,
             opponent_last_name: opponent.last_name,
             board: params[:board]
-        }, collapse_key: "updated_move"
+        }, collapse_key: 'updated_move'
     }
     response = gcm.send_notification(registration_ids, options)
     google_response = JSON.parse(response[:body])
