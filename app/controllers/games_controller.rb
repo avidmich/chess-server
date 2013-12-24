@@ -3,6 +3,7 @@ class GamesController < ApplicationController
 
   SHORT_GAME_VIEW = [:id, :game_type, :game_status, :white_player_id, :black_player_id, :date_started, :date_finished, :actual_game]
   GCM_API_KEY = 'AIzaSyCAPZQ7GDiVXSdLPMeYNhTz6hbO6Q3Rdao'
+  GAME_TERMINATION_EVENTS = %w(WHITE_RESIGNED BLACK_RESIGNED WHITE_WON BLACK_WON)
 
   def index
     @user_id = params[:user_id]
@@ -94,7 +95,11 @@ class GamesController < ApplicationController
 
 
     respond_to do |format|
-      if @game.update_attributes({actual_game: @actual_game_record, game_status: params[:event]})
+      attributes_to_update = {actual_game: @actual_game_record, game_status: params[:event]}
+      if GAME_TERMINATION_EVENTS.include?(params[:event])
+        attributes_to_update[:date_finished] = Time.now
+      end
+      if @game.update_attributes(attributes_to_update)
         format.html { redirect_to @game, notice: 'Move was successfully added.' }
         format.json { render json: @game.actual_game, status: :ok }
       else
