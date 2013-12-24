@@ -4,19 +4,20 @@ class DevicesController < ApplicationController
   # POST /users/1/register
   def register
     respond_to do |format|
-      begin
-        @device = Device.find_by(device_params)
-        if @device
-            format.json { render json: {device: @device, message: 'This device is already registered'}, status: :accepted } and return
+      @device = Device.find_by(device_params)
+      if @device
+        format.json { render json: {device: @device, message: 'This device is already registered'}, status: :accepted }
+      else
+        begin
+          @device = Device.new(device_params)
+          if @device.save
+            format.json { render json: @device, status: :created }
+          else
+            format.json { render json: @device.errors, status: :unprocessable_entity }
+          end
+        rescue => ex
+          format.json { render json: {error: ex}, status: :unprocessable_entity }
         end
-        @device = Device.new(device_params)
-        if @device.save
-          format.json { render json: @device, status: :created }
-        else
-          format.json { render json: @device.errors, status: :unprocessable_entity }
-        end
-      rescue => ex
-        format.json { render json: {error: ex}, status: :unprocessable_entity}
       end
     end
   end
@@ -25,13 +26,13 @@ class DevicesController < ApplicationController
   def unregister
     respond_to do |format|
       begin
-      if @device && @device.destroy
-        format.json { render json: @device, status: :ok }
-      else
-        format.json { render json: {error: 'Device with given registration_id not found or operation could not be processed'}, status: :unprocessable_entity }
-      end
+        if @device && @device.destroy
+          format.json { render json: @device, status: :ok }
+        else
+          format.json { render json: {error: 'Device with given registration_id not found or operation could not be processed'}, status: :unprocessable_entity }
+        end
       rescue => ex
-        format.json {render json: {error: ex}, status: :unprocessable_entity }
+        format.json { render json: {error: ex}, status: :unprocessable_entity }
       end
     end
   end
