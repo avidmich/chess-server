@@ -103,8 +103,8 @@ describe GamesController do
         # specifies that the Game created on the previous line
         # receives the :update_attributes message with whatever params are
         # submitted in the request.
-        Game.any_instance.should_receive(:update).with({ "these" => "params" })
-        put :update, {:id => game.to_param, :game => { "these" => "params" }}, valid_session
+        Game.any_instance.should_receive(:update).with({ "game_status" => "params", "actual_game" => "e2-e4" })
+        put :update, {:id => game.to_param, :game => { "game_status" => "params", "actual_game" => "e2-e4" }}, valid_session
       end
 
       it "assigns the requested game as @game" do
