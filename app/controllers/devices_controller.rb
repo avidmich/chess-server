@@ -32,7 +32,7 @@ class DevicesController < ApplicationController
           format.json { render json: {error: 'Device with given registration_id not found or operation could not be processed'}, status: :unprocessable_entity }
         end
       rescue => ex
-        format.json { render json: {error: ex}, status: :unprocessable_entity }
+        format.json { render json: {error: ex}, status: :bad_request }
       end
     end
   end

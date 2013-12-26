@@ -23,12 +23,17 @@ describe FeedbacksController do
   # This should return the minimal set of attributes required to create a valid
   # Feedback. As you add validations to Feedback, be sure to
   # adjust the attributes here as well.
-  let(:valid_attributes) { { 'type' => ''} }
+  let(:valid_attributes) { { type:'type', memo: 'memo', app_version: 'app_version', os_version: 'os_version', sdk_version: 'sdk_version', manufacturer: 'manufacturer', model: 'model', username: 'username', email:'email'} }
 
   # This should return the minimal set of values that should be in the session
   # in order to pass any filters (e.g. authentication) defined in
   # FeedbacksController. Be sure to keep this updated too.
   let(:valid_session) { {} }
+
+  before(:each) do
+    controller.stub(:authenticate).and_return(true)
+    request.env["HTTP_ACCEPT"] = 'application/json'
+  end
 
   describe 'GET index' do
     it 'assigns all feedbacks as @feedbacks' do
@@ -46,26 +51,11 @@ describe FeedbacksController do
     end
   end
 
-  describe 'GET new' do
-    it 'assigns a new feedback as @feedback' do
-      get :new, {}, valid_session
-      assigns(:feedback).should be_a_new(Feedback)
-    end
-  end
-
-  describe 'GET edit' do
-    it 'assigns the requested feedback as @feedback' do
-      feedback = Feedback.create! valid_attributes
-      get :edit, {:id => feedback.to_param}, valid_session
-      assigns(:feedback).should eq(feedback)
-    end
-  end
-
   describe 'POST create' do
     describe 'with valid params' do
       it 'creates a new Feedback' do
         expect {
-          post :create, {:feedback => valid_attributes}, valid_session
+          post :create, {feedback: valid_attributes}, valid_session
         }.to change(Feedback, :count).by(1)
       end
 
@@ -76,8 +66,8 @@ describe FeedbacksController do
       end
 
       it 'redirects to the created feedback' do
-        post :create, {:feedback => valid_attributes}, valid_session
-        response.should redirect_to(Feedback.last)
+        post :create, {feedback: valid_attributes}, valid_session
+        response.status.should == 201
       end
     end
 
@@ -93,54 +83,12 @@ describe FeedbacksController do
         # Trigger the behavior that occurs when invalid params are submitted
         Feedback.any_instance.stub(:save).and_return(false)
         post :create, {:feedback => { 'type' => 'invalid value'}}, valid_session
-        response.should render_template('new')
+        response.status.should == 422
       end
     end
   end
 
-  describe 'PUT update' do
-    describe 'with valid params' do
-      it 'updates the requested feedback' do
-        feedback = Feedback.create! valid_attributes
-        # Assuming there are no other feedbacks in the database, this
-        # specifies that the Feedback created on the previous line
-        # receives the :update_attributes message with whatever params are
-        # submitted in the request.
-        Feedback.any_instance.should_receive(:update).with({ 'type' => ''})
-        put :update, {:id => feedback.to_param, :feedback => { 'type' => ''}}, valid_session
-      end
 
-      it 'assigns the requested feedback as @feedback' do
-        feedback = Feedback.create! valid_attributes
-        put :update, {:id => feedback.to_param, :feedback => valid_attributes}, valid_session
-        assigns(:feedback).should eq(feedback)
-      end
-
-      it 'redirects to the feedback' do
-        feedback = Feedback.create! valid_attributes
-        put :update, {:id => feedback.to_param, :feedback => valid_attributes}, valid_session
-        response.should redirect_to(feedback)
-      end
-    end
-
-    describe 'with invalid params' do
-      it 'assigns the feedback as @feedback' do
-        feedback = Feedback.create! valid_attributes
-        # Trigger the behavior that occurs when invalid params are submitted
-        Feedback.any_instance.stub(:save).and_return(false)
-        put :update, {:id => feedback.to_param, :feedback => { 'type' => 'invalid value'}}, valid_session
-        assigns(:feedback).should eq(feedback)
-      end
-
-      it "re-renders the 'edit' template" do
-        feedback = Feedback.create! valid_attributes
-        # Trigger the behavior that occurs when invalid params are submitted
-        Feedback.any_instance.stub(:save).and_return(false)
-        put :update, {:id => feedback.to_param, :feedback => { 'type' => 'invalid value'}}, valid_session
-        response.should render_template('edit')
-      end
-    end
-  end
 
   describe 'DELETE destroy' do
     it 'destroys the requested feedback' do

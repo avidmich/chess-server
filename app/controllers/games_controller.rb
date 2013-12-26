@@ -10,23 +10,14 @@ class GamesController < ApplicationController
     #consider moving this logic to service layer
     @user_games = Game.where('white_player_id = :white_player OR black_player_id = :black_player', {white_player: @user_id, black_player: @user_id}).limit(params[:limit]).offset(params[:offset]).order('date_started')
     respond_to do |format|
-      format.html {}
       format.json { render json: @user_games, only: SHORT_GAME_VIEW } #filtering output for list of games
     end
   end
 
   def show
     respond_to do |format|
-      format.html {}
       format.json { render json: @game, only: SHORT_GAME_VIEW }
     end
-  end
-
-  def new
-    @game = Game.new
-  end
-
-  def edit
   end
 
   def create
@@ -124,10 +115,16 @@ class GamesController < ApplicationController
   end
 
   def destroy
-    @game.destroy
     respond_to do |format|
-      format.html { redirect_to user_games_url }
-      format.json { head :no_content }
+      begin
+        if @game.destroy
+          format.json { render json: @game, status: :ok }
+        else
+          format.json { render json: @game.errors, status: :unprocessable_entity }
+        end
+      rescue => ex
+        format.json { render json: {error: ex, message: ex.message}, status: :bad_request }
+      end
     end
   end
 
