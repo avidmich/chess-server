@@ -71,9 +71,10 @@ describe GamesController do
         assigns(:game).should be_persisted
       end
 
-      it "redirects to the created game" do
+      it "responses 201 Created and returns JSON object" do
         post :create, {:game => valid_attributes}, valid_session
-        response.should redirect_to(Game.last)
+        response.status.should eq(201)
+        JSON.parse(response.body)['id'].should_not eq(nil)
       end
     end
 
@@ -81,15 +82,15 @@ describe GamesController do
       it "assigns a newly created but unsaved game as @game" do
         # Trigger the behavior that occurs when invalid params are submitted
         Game.any_instance.stub(:save).and_return(false)
-        post :create, {:game => {  }}, valid_session
+        post :create, {:game => { game_status: "UNKNOWN"  }}, valid_session
         assigns(:game).should be_a_new(Game)
       end
 
-      it "re-renders the 'new' template" do
+      it "responses 400 Bad Request" do
         # Trigger the behavior that occurs when invalid params are submitted
         Game.any_instance.stub(:save).and_return(false)
         post :create, {:game => {  }}, valid_session
-        response.should render_template("new")
+        response.status.should eq(400)
       end
     end
   end
@@ -112,10 +113,11 @@ describe GamesController do
         assigns(:game).should eq(game)
       end
 
-      it "redirects to the game" do
+      it "resonses 200 OK and renders JSON object" do
         game = Game.create! valid_attributes
         put :update, {:id => game.to_param, :game => valid_attributes}, valid_session
-        response.should redirect_to(game)
+        response.status.should eq(200)
+        JSON.parse(response.body)['id'].should_not  eq(nil)
       end
     end
 
@@ -132,8 +134,8 @@ describe GamesController do
         game = Game.create! valid_attributes
         # Trigger the behavior that occurs when invalid params are submitted
         Game.any_instance.stub(:save).and_return(false)
-        put :update, {:id => game.to_param, :game => {  }}, valid_session
-        response.should render_template("edit")
+        put :update, {:id => game.to_param, :game => { game_status: 'UNKNOWN'  }}, valid_session
+        response.status.should eq(422)
       end
     end
   end

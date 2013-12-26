@@ -3,6 +3,10 @@ require "spec_helper"
 describe GamesController do
   describe "routing" do
 
+    it "routes to #add_moves" do
+      post("/games/2/moves").should route_to(format: :json, controller: 'games', action: 'add_moves', id: "2")
+    end
+
     it "routes to #index" do
       get("/games").should route_to("games#index")
     end

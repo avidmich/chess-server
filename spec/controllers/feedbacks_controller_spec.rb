@@ -98,10 +98,10 @@ describe FeedbacksController do
       }.to change(Feedback, :count).by(-1)
     end
 
-    it 'redirects to the feedbacks list' do
+    it 'responses 200 OK' do
       feedback = Feedback.create! valid_attributes
       delete :destroy, {:id => feedback.to_param}, valid_session
-      response.should redirect_to(feedbacks_url)
+      response.status.should eq(200)
     end
   end
 

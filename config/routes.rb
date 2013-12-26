@@ -1,5 +1,7 @@
 ChessServer::Application.routes.draw do
 
+  resources :feedbacks
+
   resources :games
 
   resources :users
