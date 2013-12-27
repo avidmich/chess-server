@@ -4,20 +4,21 @@ class DevicesController < ApplicationController
   # POST /users/1/register
   def register
     respond_to do |format|
-      @device = Device.find_by(device_params)
-      if @device
-        format.json { render json: {device: @device, message: 'This device is already registered'}, status: :accepted }
-      else
-        begin
+      begin
+        @device = Device.find_by(device_params)
+        if @device
+          format.json { render json: {device: @device, message: 'This device is already registered'}, status: :accepted }
+        else
+
           @device = Device.new(device_params)
           if @device.save
             format.json { render json: @device, status: :created }
           else
             format.json { render json: @device.errors, status: :unprocessable_entity }
           end
-        rescue => ex
-          format.json { render json: {error: ex}, status: :unprocessable_entity }
         end
+      rescue => ex
+        format.json { render json: {error: ex}, status: :bad_request }
       end
     end
   end

@@ -23,7 +23,7 @@ describe DevicesController do
   # This should return the minimal set of attributes required to create a valid
   # Device. As you add validations to Device, be sure to
   # adjust the attributes here as well.
-  let(:valid_attributes) { { registration_id: 'RegistrationIDstring', user_id: 1 } }
+  let(:valid_attributes) { {registration_id: 'RegistrationIDstring', user_id: 1} }
 
   # This should return the minimal set of values that should be in the session
   # in order to pass any filters (e.g. authentication) defined in
@@ -37,10 +37,30 @@ describe DevicesController do
 
   describe 'POST register' do
     describe 'with valid params' do
-      it 'creates a new Device' do
+      it 'registers a new Device and returns 201 Created status code' do
         expect {
           post :register, {user_id: 1, device: valid_attributes}, valid_session
         }.to change(Device, :count).by(1)
+        response.status.should eq(201)
+        json_response_body = JSON.parse(response.body)
+        json_response_body['registration_id'].should eq(valid_attributes[:registration_id])
+        json_response_body['id'].should_not eq(nil)
+        json_response_body['user_id'].should eq(valid_attributes[:user_id])
+      end
+
+      it 'tries to register already registered device and returns 202 Accepted' do
+        device = Device.create! valid_attributes
+        expect {
+          post :register, {user_id: 1, device: valid_attributes}, valid_session
+          #expecting that already registered device is not stored to DB, it just responses with 202 Accepted and appropriate message
+        }.to change(Device, :count).by(0)
+        response.status.should eq(202)
+        json_response_body = JSON.parse(response.body)
+        json_response_body['message'].should eq('This device is already registered')
+        json_response_body['device'].should_not eq(nil)
+        json_response_body['device']['registration_id'].should eq(valid_attributes[:registration_id])
+        json_response_body['device']['user_id'].should eq(valid_attributes[:user_id])
+        json_response_body['device']['id'].should_not eq(nil)
       end
 
       it 'assigns a newly created device as @device' do
@@ -48,37 +68,38 @@ describe DevicesController do
         assigns(:device).should be_a(Device)
         assigns(:device).should be_persisted
       end
-
-      it 'redirects to the created device' do
-        post :register, {user_id: 1, device: valid_attributes}, valid_session
-        response.status.should == 201
-      end
     end
 
     describe 'with invalid params' do
       it 'assigns a newly created but unsaved device as @device' do
         # Trigger the behavior that occurs when invalid params are submitted
         Device.any_instance.stub(:save).and_return(false)
-        post :register, {user_id: 1, device:  { 'registration_id' => 'invalid value'}}, valid_session
+        post :register, {user_id: "invalid user id", device: {'registration_id' => 'invalid value'}}, valid_session
         assigns(:device).should be_a_new(Device)
       end
 
-      it "re-renders the 'new' template" do
+      it "returns 422 Unprocessible enitity in case of unsuccessful save operation" do
         # Trigger the behavior that occurs when invalid params are submitted
         Device.any_instance.stub(:save).and_return(false)
-        post :register, {user_id: 1, device: { 'registration_id' => 'invalid value'}}, valid_session
-        response.status.should == 422
+        post :register, {user_id: 'invalid user id', device: {'registration_id' => 'invalid value'}}, valid_session
+        response.status.should eq(422)
+      end
+
+      it 'return 400 Bad request in case of incorrect request' do
+        post :register, {user_id: ''}, valid_session
+        response.status.should eq(400)
       end
     end
   end
 
   describe 'POST Unregister' do
     describe 'with valid params' do
-      it "destroys the requested device" do
+      it "destroys the requested device and returns 200 OK response status" do
         device = Device.create! valid_attributes
         expect {
-          post :unregister, {user_id: device.user_id, registration_id: device.registration_id }, valid_session
+          post :unregister, {user_id: device.user_id, registration_id: device.registration_id}, valid_session
         }.to change(Device, :count).by(-1)
+        response.status.should eq(200)
       end
 
       it 'assigns the requested device as @device' do
@@ -90,8 +111,11 @@ describe DevicesController do
       it 'responses 200 OK with unregistered device JSON in response body' do
         device = Device.create! valid_attributes
         post :unregister, {user_id: valid_attributes[:user_id], registration_id: valid_attributes[:registration_id]}, valid_session
-        response.status.should == 200
-        JSON.parse(response.body)['id'].should_not eq(nil)
+        response.status.should eq(200)
+        json_response_body = JSON.parse(response.body)
+        json_response_body['id'].should_not eq(nil)
+        json_response_body['user_id'].should eq(valid_attributes[:user_id])
+        json_response_body['regitstration_id'].should eq(valid_attributes[:registration_id])
       end
     end
 
@@ -104,12 +128,18 @@ describe DevicesController do
         assigns(:device).should eq(nil)
       end
 
-      it "re-renders the 'edit' template" do
+      it "returns 422 Unprocessible entity in case of incorrect request params" do
         device = Device.create! valid_attributes
         # Trigger the behavior that occurs when invalid params are submitted
         Device.any_instance.stub(:save).and_return(false)
-        post :unregister, {user_id: valid_attributes[:user_id], registration_id: 'invalid value'}, valid_session
-        response.status.should == 422
+        post :unregister, {user_id: 'invalid user id', registration_id: 'invalid registration value'}, valid_session
+        response.status.should eq(422)
+      end
+
+      it 'returns 400 Bad request in case of empty request params' do
+        post :unregister, {user_id: 'invalid user id'}
+        response.status.should eq(400)
+        JSON.parse(response.body)['error'].should_not eq(nil)
       end
     end
   end
