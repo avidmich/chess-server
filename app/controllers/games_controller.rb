@@ -1,5 +1,5 @@
 class GamesController < ApplicationController
-  before_action :set_game, only: [:show, :edit, :update, :destroy, :add_moves]
+  before_action :set_game, only: [:show, :update, :destroy, :add_moves]
 
   SHORT_GAME_VIEW = [:id, :game_type, :game_status, :white_player_id, :black_player_id, :date_started, :date_finished, :actual_game]
   GCM_API_KEY = 'AIzaSyCAPZQ7GDiVXSdLPMeYNhTz6hbO6Q3Rdao'
@@ -85,7 +85,6 @@ class GamesController < ApplicationController
       return
     end
 
-
     respond_to do |format|
       attributes_to_update = {actual_game: @actual_game_record, game_status: params[:event]}
       if GAME_TERMINATION_EVENTS.include?(params[:event])
@@ -99,7 +98,6 @@ class GamesController < ApplicationController
         format.json { render json: @game.errors, status: :unprocessable_entity }
       end
     end
-
   end
 
   def update
@@ -134,7 +132,7 @@ class GamesController < ApplicationController
 
   private
   def find_opponent(game, user_id)
-    game.white_player.id == user_id ? game.white_player : game.black_player
+     game.white_player.id == user_id ? game.white_player : game.black_player
   end
 
   def handle_canonical_ids(devices, registration_ids, google_response)
@@ -154,7 +152,11 @@ class GamesController < ApplicationController
   end
 
   def set_game
-    @game = Game.find(params[:id])
+    @game = find_game
+  end
+
+  def find_game
+    Game.find(params[:id])
   end
 
   def game_params

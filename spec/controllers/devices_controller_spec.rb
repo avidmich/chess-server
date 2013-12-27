@@ -78,7 +78,7 @@ describe DevicesController do
         assigns(:device).should be_a_new(Device)
       end
 
-      it "returns 422 Unprocessible enitity in case of unsuccessful save operation" do
+      it 'returns 422 Unprocessible enitity in case of unsuccessful save operation' do
         # Trigger the behavior that occurs when invalid params are submitted
         Device.any_instance.stub(:save).and_return(false)
         post :register, {user_id: 'invalid user id', device: {'registration_id' => 'invalid value'}}, valid_session
@@ -94,7 +94,7 @@ describe DevicesController do
 
   describe 'POST Unregister' do
     describe 'with valid params' do
-      it "destroys the requested device and returns 200 OK response status" do
+      it 'destroys the requested device and returns 200 OK response status' do
         device = Device.create! valid_attributes
         expect {
           post :unregister, {user_id: device.user_id, registration_id: device.registration_id}, valid_session
@@ -115,7 +115,7 @@ describe DevicesController do
         json_response_body = JSON.parse(response.body)
         json_response_body['id'].should_not eq(nil)
         json_response_body['user_id'].should eq(valid_attributes[:user_id])
-        json_response_body['regitstration_id'].should eq(valid_attributes[:registration_id])
+        json_response_body['registration_id'].should eq(valid_attributes[:registration_id])
       end
     end
 
@@ -128,7 +128,7 @@ describe DevicesController do
         assigns(:device).should eq(nil)
       end
 
-      it "returns 422 Unprocessible entity in case of incorrect request params" do
+      it 'returns 422 Unprocessable entity in case of incorrect request params' do
         device = Device.create! valid_attributes
         # Trigger the behavior that occurs when invalid params are submitted
         Device.any_instance.stub(:save).and_return(false)
@@ -136,11 +136,6 @@ describe DevicesController do
         response.status.should eq(422)
       end
 
-      it 'returns 400 Bad request in case of empty request params' do
-        post :unregister, {user_id: 'invalid user id'}
-        response.status.should eq(400)
-        JSON.parse(response.body)['error'].should_not eq(nil)
-      end
     end
   end
 
