@@ -8,31 +8,31 @@ describe GamesController do
     end
 
     it 'routes to #index' do
-      get('/games').should route_to('games#index')
+      get('/users/1/games').should route_to('games#index', user_id: '1', format: :json)
     end
 
     it 'routes to #new' do
-      get('/games/new').should route_to('games#new')
+      get('/users/1/games/new').should route_to('games#new', user_id:'1', format: :json)
     end
 
     it 'routes to #show' do
-      get('/games/1').should route_to('games#show', :id => '1')
+      get('/games/1').should route_to('games#show', :id => '1', format: :json)
     end
 
     it 'routes to #edit' do
-      get('/games/1/edit').should route_to('games#edit', :id => '1')
+      get('/games/1/edit').should route_to('games#edit', :id => '1', format: :json)
     end
 
     it 'routes to #create' do
-      post('/games').should route_to('games#create')
+      post('/users/1/games').should route_to('games#create', user_id: '1', format: :json)
     end
 
     it 'routes to #update' do
-      put('/games/1').should route_to('games#update', :id => '1')
+      put('/games/1').should route_to('games#update', :id => '1', format: :json)
     end
 
     it 'routes to #destroy' do
-      delete('/games/1').should route_to('games#destroy', :id => '1')
+      delete('/games/1').should route_to('games#destroy', :id => '1', format: :json)
     end
 
   end

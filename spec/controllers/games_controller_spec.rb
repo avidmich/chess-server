@@ -61,18 +61,18 @@ describe GamesController do
     describe 'with valid params' do
       it 'creates a new Game' do
         expect {
-          post :create, {game: valid_attributes}, valid_session
+          post :create, {user_id: '1', game: valid_attributes}, valid_session
         }.to change(Game, :count).by(1)
       end
 
       it 'assigns a newly created game as @game' do
-        post :create, {game: valid_attributes}, valid_session
+        post :create, {user_id: '1', game: valid_attributes}, valid_session
         assigns(:game).should be_a(Game)
         assigns(:game).should be_persisted
       end
 
       it 'responses 201 Created and returns JSON object' do
-        post :create, {game: valid_attributes}, valid_session
+        post :create, {user_id: '1', game: valid_attributes}, valid_session
         response.status.should eq(201)
         JSON.parse(response.body)['id'].should_not eq(nil)
       end
@@ -82,14 +82,14 @@ describe GamesController do
       it 'assigns a newly created but unsaved game as @game' do
         # Trigger the behavior that occurs when invalid params are submitted
         Game.any_instance.stub(:save).and_return(false)
-        post :create, {game: {game_status: 'UNKNOWN'}}, valid_session
+        post :create, {user_id: '1', game: {game_status: 'UNKNOWN'}}, valid_session
         assigns(:game).should be_a_new(Game)
       end
 
       it 'responses 400 Bad Request' do
         # Trigger the behavior that occurs when invalid params are submitted
         Game.any_instance.stub(:save).and_return(false)
-        post :create, {game: {}}, valid_session
+        post :create, {user_id: '1', game: {}}, valid_session
         response.status.should eq(400)
       end
     end

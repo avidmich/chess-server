@@ -1,13 +1,5 @@
 ChessServer::Application.routes.draw do
 
-  resources :feedbacks
-
-  resources :games
-
-  resources :users
-
-  resources :devices
-
   get '/users/search' => 'users#show', defaults: { format: :json }
   post '/games/:id/moves' => 'games#add_moves', defaults: {format: :json}
   post '/users/:user_id/register' => 'devices#register', defaults: {format: :json}
