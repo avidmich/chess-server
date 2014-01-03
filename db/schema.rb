@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20131224150945) do
+ActiveRecord::Schema.define(version: 20140103145623) do
 
   create_table "devices", force: true do |t|
     t.string   "registration_id"
@@ -61,5 +61,7 @@ ActiveRecord::Schema.define(version: 20131224150945) do
     t.datetime "updated_at"
     t.string   "email"
   end
+
+  add_index "users", ["gplus_id"], name: "index_users_on_gplus_id", unique: true
 
 end

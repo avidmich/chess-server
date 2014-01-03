@@ -23,7 +23,7 @@ describe UsersController do
   # This should return the minimal set of attributes required to create a valid
   # User. As you add validations to User, be sure to
   # adjust the attributes here as well.
-  let(:valid_attributes) { { email: 'email@email.com', first_name: 'Test first name', last_name: 'Test last name', gplus_id: 'test google+ id'} }
+  let(:valid_attributes) { {email: 'email@email.com', first_name: 'Test first name', last_name: 'Test last name', gplus_id: 'test google+ id'} }
 
   # This should return the minimal set of values that should be in the session
   # in order to pass any filters (e.g. authentication) defined in
@@ -75,7 +75,15 @@ describe UsersController do
 
       it 'responses 201 Created status code' do
         post :create, {:user => valid_attributes}, valid_session
-        response.status.should == 201
+        response.status.should eq(201)
+      end
+
+      it 'responses 200 Ok in case user exists' do
+        User.should_receive(:find_by_gplus_id).and_return(User.new(valid_attributes))
+        User.should_not_receive(:save)
+        post :create, {:user => valid_attributes}, valid_session
+        response.status.should eq(200)
+
       end
     end
 
@@ -84,15 +92,15 @@ describe UsersController do
         # Trigger the behavior that occurs when invalid params are submitted
         User.any_instance.stub(:save).and_return(false)
         expect {
-          post :create, {:user => { email: 'incorrect email'}}, valid_session
-        }.to change(User, :count).by(0) and response.status.should == 422
+          post :create, {:user => {email: 'incorrect email'}}, valid_session
+        }.to change(User, :count).by(0) and response.status.should eq(422)
       end
 
       it 'responses 400 Bad request' do
         # Trigger the behavior that occurs when invalid params are submitted
         User.any_instance.stub(:save).and_return(false)
-        post :create, {:user => {  }}, valid_session
-        response.status.should == 400
+        post :create, {:user => {}}, valid_session
+        response.status.should eq(400)
       end
     end
   end
@@ -105,8 +113,8 @@ describe UsersController do
         # specifies that the User created on the previous line
         # receives the :update_attributes message with whatever params are
         # submitted in the request.
-        User.any_instance.should_receive(:update).with({ 'gplus_id' => 'gplus id number'})
-        put :update, {:id => user.to_param, :user => { gplus_id: 'gplus id number'}}, valid_session
+        User.any_instance.should_receive(:update).with({'gplus_id' => 'gplus id number'})
+        put :update, {:id => user.to_param, :user => {gplus_id: 'gplus id number'}}, valid_session
       end
 
       it 'assigns the requested user as @user' do
@@ -118,7 +126,7 @@ describe UsersController do
       it 'responses 200 OK' do
         user = User.create! valid_attributes
         put :update, {:id => user.to_param, :user => valid_attributes}, valid_session
-        response.status.should == 200
+        response.status.should eq(200)
       end
     end
 
@@ -127,17 +135,17 @@ describe UsersController do
         user = User.create! valid_attributes
         # Trigger the behavior that occurs when invalid params are submitted
         User.any_instance.stub(:save).and_return(false)
-        put :update, {:id => user.to_param, :user => {  }}, valid_session
+        put :update, {:id => user.to_param, :user => {}}, valid_session
         assigns(:user).should eq(user)
-        response.status.should == 400
+        response.status.should eq(400)
       end
 
       it 'returns 422 Unprocessible entity status code' do
         user = User.create! valid_attributes
         # Trigger the behavior that occurs when invalid params are submitted
         User.any_instance.stub(:save).and_return(false)
-        put :update, {:id => user.to_param, :user => { email: 'invalid@email.test'}}, valid_session
-        response.status.should ==  422
+        put :update, {:id => user.to_param, :user => {email: 'invalid@email.test'}}, valid_session
+        response.status.should eq(422)
       end
     end
   end
@@ -153,7 +161,7 @@ describe UsersController do
     it 'returns 200 OK response status' do
       user = User.create! valid_attributes
       delete :destroy, {:id => user.to_param}, valid_session
-      response.status.should == 200
+      response.status.should eq(200)
     end
   end
 

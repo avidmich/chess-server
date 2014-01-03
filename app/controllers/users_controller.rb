@@ -38,13 +38,18 @@ class UsersController < ApplicationController
   def create
     respond_to do |format|
       begin
-        @user = User.new(user_params)
-        if @user.save
-          format.html { redirect_to @user, notice: 'User was successfully created.' }
-          format.json { render json: @user, status: :created }
+        @user = User.find_by_gplus_id(params[:gplus_id])
+        if @user
+          format.json {render json: {user: @user, notice: 'User already exists'}, status: :ok}
         else
-          format.html { render action: 'new' }
-          format.json { render json: @user.errors, status: :unprocessable_entity }
+          @user = User.new(user_params)
+          if @user.save
+            format.html { redirect_to @user, notice: 'User was successfully created.' }
+            format.json { render json: @user, status: :created }
+          else
+            format.html { render action: 'new' }
+            format.json { render json: @user.errors, status: :unprocessable_entity }
+          end
         end
       rescue => ex
         format.json { render json: {error: ex, message: ex.message}, status: :bad_request }
