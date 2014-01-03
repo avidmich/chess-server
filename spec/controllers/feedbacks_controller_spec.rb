@@ -32,7 +32,7 @@ describe FeedbacksController do
 
   before(:each) do
     controller.stub(:authenticate).and_return(true)
-    request.env["HTTP_ACCEPT"] = 'application/json'
+    request.env['HTTP_ACCEPT'] = 'application/json'
   end
 
   describe 'GET index' do
@@ -59,13 +59,13 @@ describe FeedbacksController do
         }.to change(Feedback, :count).by(1)
       end
 
-      it 'assigns a newly created feedback as @feedback' do
+      it 'assigns a newly created feedback as @feedback and checks that it is persisted' do
         post :create, {:feedback => valid_attributes}, valid_session
         assigns(:feedback).should be_a(Feedback)
         assigns(:feedback).should be_persisted
       end
 
-      it 'redirects to the created feedback' do
+      it 'responses 201 Created' do
         post :create, {feedback: valid_attributes}, valid_session
         response.status.should == 201
       end
@@ -79,7 +79,7 @@ describe FeedbacksController do
         assigns(:feedback).should be_a_new(Feedback)
       end
 
-      it "re-renders the 'new' template" do
+      it 'responses 422 Unprocessable entity' do
         # Trigger the behavior that occurs when invalid params are submitted
         Feedback.any_instance.stub(:save).and_return(false)
         post :create, {:feedback => { 'type' => 'invalid value'}}, valid_session

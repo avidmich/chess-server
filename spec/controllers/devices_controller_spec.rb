@@ -32,7 +32,7 @@ describe DevicesController do
 
   before(:each) do
     controller.stub(:authenticate).and_return(true)
-    request.env["HTTP_ACCEPT"] = 'application/json'
+    request.env['HTTP_ACCEPT'] = 'application/json'
   end
 
   describe 'POST register' do
@@ -74,11 +74,11 @@ describe DevicesController do
       it 'assigns a newly created but unsaved device as @device' do
         # Trigger the behavior that occurs when invalid params are submitted
         Device.any_instance.stub(:save).and_return(false)
-        post :register, {user_id: "invalid user id", device: {'registration_id' => 'invalid value'}}, valid_session
+        post :register, {user_id: 'invalid user id', device: {'registration_id' => 'invalid value'}}, valid_session
         assigns(:device).should be_a_new(Device)
       end
 
-      it 'returns 422 Unprocessible enitity in case of unsuccessful save operation' do
+      it 'returns 422 Unprocessable enitity in case of unsuccessful save operation' do
         # Trigger the behavior that occurs when invalid params are submitted
         Device.any_instance.stub(:save).and_return(false)
         post :register, {user_id: 'invalid user id', device: {'registration_id' => 'invalid value'}}, valid_session

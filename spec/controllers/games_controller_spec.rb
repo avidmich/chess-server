@@ -189,7 +189,7 @@ describe GamesController do
         response_hash['error'].should eq('GCM error: [{"error"=>"Error message"}]')
       end
 
-      it 'requests to add move but persistence failed' do
+      it 'requests to add move but persistence failed so response is 422 Unprocessable entity' do
         GCM.any_instance.stub(:send_notification).and_return({body: {success: 1, canonical_ids: 0, failure: 0}.to_json, response: 'success', })
         GCM.any_instance.should_receive(:send_notification).exactly(1).times
         Device.should_receive(:where).with(user_id: '1').and_return([Device.new({id: 1, registration_id: 'registration_id', user_id: 1})])
@@ -232,7 +232,7 @@ describe GamesController do
         assigns(:game).should eq(game)
       end
 
-      it 'resonses 200 OK and renders JSON object' do
+      it 'responses 200 OK and renders JSON object' do
         game = Game.create! valid_attributes
         put :update, {id: game.to_param, game: valid_attributes}, valid_session
         response.status.should eq(200)
@@ -249,7 +249,7 @@ describe GamesController do
         assigns(:game).should eq(game)
       end
 
-      it "re-renders the 'edit' template" do
+      it 'returns 422 Unprocessable entity' do
         game = Game.create! valid_attributes
         # Trigger the behavior that occurs when invalid params are su,bmitted
         Game.any_instance.stub(:save).and_return(false)
