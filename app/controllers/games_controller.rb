@@ -25,6 +25,32 @@ class GamesController < ApplicationController
       begin
         @game = Game.new(game_params)
         if @game.save
+          opponent_id = params[:opponent_id]
+          if opponent_id
+            devices = Device.where(user_id: opponent_id)
+            registration_ids = devices.pluck(:registration_id)
+            #response with error in case device was not found
+            if registration_ids and registration_ids.any?
+              #Send update to opponent device
+              gcm = GCM.new(GCM_API_KEY)
+              game_initiator = find_opponent @game, opponent_id
+              options = {
+                  data: {
+                      game_id: @game.id,
+                      event: 'NEW_GAME',
+                      opponent_id: game_initiator.id,
+                      opponent_first_name: game_initiator.first_name,
+                      opponent_last_name: game_initiator.last_name,
+                      board: params[:board]
+                  }, collapse_key: 'new_game'
+              }
+              response = gcm.send_notification(registration_ids, options)
+              google_response = JSON.parse(response[:body])
+
+              handle_canonical_ids(devices, registration_ids, google_response) if google_response['canonical_ids'] != 0
+            end
+          end
+
           format.html { redirect_to @game, notice: 'Game was successfully created.' }
           format.json { render json: @game, status: :created }
         else
@@ -103,13 +129,13 @@ class GamesController < ApplicationController
   def update
     respond_to do |format|
       begin
-      if @game.update(game_params)
-        format.html { redirect_to @game, notice: 'Game was successfully updated.' }
-        format.json { render json: @game, status: :ok }
-      else
-        format.html { render action: 'edit' }
-        format.json { render json: @game.errors, status: :unprocessable_entity }
-      end
+        if @game.update(game_params)
+          format.html { redirect_to @game, notice: 'Game was successfully updated.' }
+          format.json { render json: @game, status: :ok }
+        else
+          format.html { render action: 'edit' }
+          format.json { render json: @game.errors, status: :unprocessable_entity }
+        end
       rescue => ex
         format.json { render json: {error: ex, message: ex.message}, status: :bad_request }
       end
@@ -132,7 +158,7 @@ class GamesController < ApplicationController
 
   private
   def find_opponent(game, user_id)
-     game.white_player.id == user_id ? game.white_player : game.black_player
+    game.white_player.id == user_id ? game.white_player : game.black_player
   end
 
   def handle_canonical_ids(devices, registration_ids, google_response)
