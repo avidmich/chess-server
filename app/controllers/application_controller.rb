@@ -10,7 +10,7 @@ class ApplicationController < ActionController::Base
   #protect_from_forgery with: :exception
 
   #before_action :verify_authentication
-  before_action :authenticate
+  before_action :authenticate, except: [:version]
 
   private
 
