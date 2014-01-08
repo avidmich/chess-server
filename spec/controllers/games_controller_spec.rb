@@ -60,8 +60,12 @@ describe GamesController do
   describe 'POST create' do
     describe 'with valid params' do
       it 'creates a new Game' do
+        GCM.any_instance.should_receive(:send_notification)
+        Device.should_receive(:where).with(user_id: '1').and_return([Device.new({id: 1, registration_id: 'registration_id', user_id: 1})])
+        Array.any_instance.stub(:pluck).and_return(['registration_id'])
+        controller.stub(:find_opponent).and_return(User.new({id: 1}))
         expect {
-          post :create, {user_id: '1', game: valid_attributes}, valid_session
+          post :create, {user_id: '1',opponent_id:'1', game: valid_attributes}, valid_session
         }.to change(Game, :count).by(1)
       end
 
@@ -99,7 +103,7 @@ describe GamesController do
     describe 'with valid params' do
       it 'adds game moves and returns 200 OK response status code' do
         GCM.any_instance.stub(:send_notification).and_return({body: {success: 1, canonical_ids: 0, failure: 0}.to_json, response: 'success', })
-        GCM.any_instance.should_receive(:send_notification).exactly(1).times
+        GCM.any_instance.should_receive(:send_notification)
         Device.should_receive(:where).with(user_id: '1').and_return([Device.new({id: 1, registration_id: 'registration_id', user_id: 1})])
         Array.any_instance.stub(:pluck).and_return(['registration_id'])
         controller.stub(:find_game).and_return(

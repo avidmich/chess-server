@@ -32,7 +32,6 @@ class GamesController < ApplicationController
             #response with error in case device was not found
             if registration_ids and registration_ids.any?
               #Send update to opponent device
-              gcm = GCM.new(GCM_API_KEY)
               game_initiator = find_opponent @game, opponent_id
               options = {
                   data: {
@@ -44,10 +43,7 @@ class GamesController < ApplicationController
                       board: params[:board]
                   }, collapse_key: 'new_game'
               }
-              response = gcm.send_notification(registration_ids, options)
-              google_response = JSON.parse(response[:body])
-
-              handle_canonical_ids(devices, registration_ids, google_response) if google_response['canonical_ids'] != 0
+              send_gcm_notification(devices, registration_ids, options)
             end
           end
 
@@ -87,8 +83,6 @@ class GamesController < ApplicationController
       return
     end
 
-    #Send update to opponent device
-    gcm = GCM.new(GCM_API_KEY)
     opponent = find_opponent @game, user_id
     options = {
         data: {
@@ -100,10 +94,8 @@ class GamesController < ApplicationController
             board: params[:board]
         }, collapse_key: 'updated_move'
     }
-    response = gcm.send_notification(registration_ids, options)
-    google_response = JSON.parse(response[:body])
-
-    handle_canonical_ids(devices, registration_ids, google_response) if google_response['canonical_ids'] != 0
+    #Send update to opponent device
+    google_response, response = send_gcm_notification(devices, registration_ids, options)
 
     unless response[:response] == 'success' and google_response['failure'] == 0 or google_response['success'] > 0
       #some error occurred
@@ -157,6 +149,14 @@ class GamesController < ApplicationController
   end
 
   private
+  def send_gcm_notification(devices, registration_ids, message_payload)
+    gcm = GCM.new(GCM_API_KEY)
+    response = gcm.send_notification(registration_ids, message_payload)
+    google_response = JSON.parse(response[:body])
+    handle_canonical_ids(devices, registration_ids, google_response) if google_response['canonical_ids'] != 0
+    return google_response, response
+  end
+
   def find_opponent(game, user_id)
     game.white_player.id == user_id ? game.white_player : game.black_player
   end
