@@ -74,8 +74,8 @@ class GamesController < ApplicationController
     @actual_game_record[:board] = params[:board]
 
     #Obtain opponent registration id
-    user_id = params[:user_id]
-    devices = Device.where(user_id: user_id)
+    opponent_id = params[:opponent_id]
+    devices = Device.where(user_id: opponent_id)
     registration_ids = devices.pluck(:registration_id)
     #response with error in case device was not found
     unless registration_ids and registration_ids.any?
@@ -83,7 +83,8 @@ class GamesController < ApplicationController
       return
     end
 
-    opponent = find_opponent @game, user_id
+    #opponent here is the player who sent current request, but opponent_id is his opponent unique identifier
+    opponent = find_opponent @game, opponent_id
     options = {
         data: {
             game_id: @game.id,
