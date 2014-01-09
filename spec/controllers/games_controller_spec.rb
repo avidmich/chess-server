@@ -119,7 +119,7 @@ describe GamesController do
                 }
             )
         )
-        post :add_moves, {board: 'Game board', id: '1', user_id: '1', event: 'BLACK_WON'}
+        post :add_moves, {board: 'Game board', id: '1', opponent_id: '1', event: 'BLACK_WON'}
         response.status.should eq(200)
         response_hash = JSON.parse(response.body)
         response_hash['result'].should eq('result')
@@ -142,7 +142,7 @@ describe GamesController do
                 }
             )
         )
-        post :add_moves, {id: '1', user_id: '1', event: 'BLACK_WON'}
+        post :add_moves, {id: '1', opponent_id: '1', event: 'BLACK_WON'}
         response.status.should eq(400)
         response_hash = JSON.parse(response.body)
         response_hash['board'].should eq(['Moves record was not found. If you are using JSON request body, check that \'Content-Type\' header is set to \'application/json\' value'])
@@ -163,7 +163,7 @@ describe GamesController do
                 }
             )
         )
-        post :add_moves, {board: 'Game board', id: '1', user_id: '1', event: 'BLACK_WON'}
+        post :add_moves, {board: 'Game board', id: '1', opponent_id: '1', event: 'BLACK_WON'}
         response.status.should eq(409)
         response_hash = JSON.parse(response.body)
         response_hash['error'].should eq('Registration ID error: no device registration_id found')
@@ -187,7 +187,7 @@ describe GamesController do
                 }
             )
         )
-        post :add_moves, {board: 'Game board', id: '1', user_id: '1', event: 'BLACK_WON'}
+        post :add_moves, {board: 'Game board', id: '1', opponent_id: '1', event: 'BLACK_WON'}
         response.status.should eq(409)
         response_hash = JSON.parse(response.body)
         response_hash['error'].should eq('GCM error: [{"error"=>"Error message"}]')
@@ -212,7 +212,7 @@ describe GamesController do
                 }
             )
         )
-        post :add_moves, {board: 'Game board', id: '1', user_id: '1', event: 'BLACK_WON'}
+        post :add_moves, {board: 'Game board', id: '1', opponent_id: '1', event: 'BLACK_WON'}
         response.status.should eq(422)
       end
     end
