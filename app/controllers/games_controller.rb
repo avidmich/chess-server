@@ -159,7 +159,7 @@ class GamesController < ApplicationController
   end
 
   def find_opponent(game, user_id)
-    game.white_player.id == user_id ? game.white_player : game.black_player
+    game.white_player.id == user_id.to_i ? game.black_player : game.white_player
   end
 
   def handle_canonical_ids(devices, registration_ids, google_response)
