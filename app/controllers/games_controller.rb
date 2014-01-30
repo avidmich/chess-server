@@ -71,6 +71,10 @@ class GamesController < ApplicationController
     end
 
     @actual_game_record = @game.actual_game
+    if params[:board] == @actual_game_record[:board]
+      render json: @game.actual_game, status: :ok
+      return
+    end
     @actual_game_record[:board] = params[:board]
 
     #Obtain opponent registration id
@@ -78,32 +82,29 @@ class GamesController < ApplicationController
     devices = Device.where(user_id: opponent_id)
     registration_ids = devices.pluck(:registration_id)
     #response with error in case device was not found
-    unless registration_ids and registration_ids.any?
-      render json: {error: 'Registration ID error: no device registration_id found'}, status: :conflict
-      return
+
+    if registration_ids and registration_ids.any?
+      #opponent here is the player who sent current request, but opponent_id is his opponent unique identifier
+      opponent = find_opponent @game, opponent_id
+      options = {
+          data: {
+              game_id: @game.id,
+              event: params[:event],
+              opponent_id: opponent.id,
+              opponent_first_name: opponent.first_name,
+              opponent_last_name: opponent.last_name,
+              board: params[:board]
+          }, collapse_key: 'updated_move'
+      }
+      #Send update to opponent device
+      google_response, response = send_gcm_notification(devices, registration_ids, options)
+
+      unless response[:response] == 'success' and google_response['failure'] == 0 or google_response['success'] > 0
+        #some error occurred
+        render json: {error: "GCM error: #{google_response['results'].select { |f| f['error'] }}"}, status: :conflict
+        return
+      end
     end
-
-    #opponent here is the player who sent current request, but opponent_id is his opponent unique identifier
-    opponent = find_opponent @game, opponent_id
-    options = {
-        data: {
-            game_id: @game.id,
-            event: params[:event],
-            opponent_id: opponent.id,
-            opponent_first_name: opponent.first_name,
-            opponent_last_name: opponent.last_name,
-            board: params[:board]
-        }, collapse_key: 'updated_move'
-    }
-    #Send update to opponent device
-    google_response, response = send_gcm_notification(devices, registration_ids, options)
-
-    unless response[:response] == 'success' and google_response['failure'] == 0 or google_response['success'] > 0
-      #some error occurred
-      render json: {error: "GCM error: #{google_response['results'].select { |f| f['error'] }}"}, status: :conflict
-      return
-    end
-
     respond_to do |format|
       attributes_to_update = {actual_game: @actual_game_record, game_status: params[:event]}
       if GAME_TERMINATION_EVENTS.include?(params[:event])

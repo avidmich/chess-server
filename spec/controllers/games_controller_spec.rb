@@ -148,7 +148,26 @@ describe GamesController do
         response_hash['board'].should eq(['Moves record was not found. If you are using JSON request body, check that \'Content-Type\' header is set to \'application/json\' value'])
       end
 
-      it 'requests to add a move but without corresponding device and thus without registration_id' do
+      it 'requests to synchronize game but without new moves' do
+        controller.stub(:find_game).and_return(
+            Game.new(
+                {
+                    id: 1,
+                    actual_game: {result: 'result', board: 'Game board'},
+                    game_type: 'NETWORK',
+                    game_status: 'IN_PROGRESS',
+                    white_player: User.new({id: 1}),
+                    black_player: User.new({id: 2})
+                }
+            )
+        )
+        post :add_moves, {board: 'Game board', id: '1', opponent_id: '1', event: 'BLACK_WON'}
+        response.status.should eq(200)
+        response_hash = JSON.parse(response.body)
+        response_hash['board'].should eq('Game board')
+      end
+
+      it 'requests to add move without opponent registration_id' do
         Device.should_receive(:where).with(user_id: '1').and_return([])
         Array.any_instance.stub(:pluck).and_return([])
         controller.stub(:find_game).and_return(
@@ -164,9 +183,9 @@ describe GamesController do
             )
         )
         post :add_moves, {board: 'Game board', id: '1', opponent_id: '1', event: 'BLACK_WON'}
-        response.status.should eq(409)
+        response.status.should eq(200)
         response_hash = JSON.parse(response.body)
-        response_hash['error'].should eq('Registration ID error: no device registration_id found')
+        response_hash['board'].should eq('Game board')
       end
 
       it 'requests to add a move but GCM notification failed' do
