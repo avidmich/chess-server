@@ -3,6 +3,7 @@ ChessServer::Application.routes.draw do
   get '/version' => 'version#version', defaults: { format: :json }
   get '/users/search' => 'users#show', defaults: { format: :json }
   post '/games/:id/moves' => 'games#add_moves', defaults: {format: :json}
+  post '/games/:id/draw' => 'games#draw', defaults: {format: :json}
   post '/users/:user_id/register' => 'devices#register', defaults: {format: :json}
   post '/users/:user_id/unregister' => 'devices#unregister', defaults: {format: :json}
 

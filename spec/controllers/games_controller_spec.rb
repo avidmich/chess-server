@@ -99,6 +99,77 @@ describe GamesController do
     end
   end
 
+  describe 'POST draw' do
+    describe 'with valid params' do
+      it 'notifies opponent and returns 200 OK response status code' do
+        GCM.any_instance.stub(:send_notification).and_return({body: {success: 1, canonical_ids: 0, failure: 0}.to_json, response: 'success', })
+        GCM.any_instance.should_receive(:send_notification)
+        Device.should_receive(:where).with(user_id: '1').and_return([Device.new({id: 1, registration_id: 'registration_id', user_id: 1})])
+        Array.any_instance.stub(:pluck).and_return(['registration_id'])
+        Game.any_instance.should_not_receive(:update_attributes)
+        controller.stub(:find_game).and_return(
+            Game.new(
+                {
+                    id: 1,
+                    actual_game: {result: 'result'},
+                    game_type: 'NETWORK',
+                    game_status: 'IN_PROGRESS',
+                    white_player: User.new({id: 1}),
+                    black_player: User.new({id: 2})
+
+                }
+            )
+        )
+        post :draw, {id: '1', opponent_id: '1', game_status: 'WHITE_OFFER_DRAW'}
+        response.status.should eq(200)
+      end
+
+      it 'notifies opponent that draw offer is accepted and returns 200 OK response status code' do
+        GCM.any_instance.stub(:send_notification).and_return({body: {success: 1, canonical_ids: 0, failure: 0}.to_json, response: 'success', })
+        GCM.any_instance.should_receive(:send_notification)
+        Device.should_receive(:where).with(user_id: '1').and_return([Device.new({id: 1, registration_id: 'registration_id', user_id: 1})])
+        Array.any_instance.stub(:pluck).and_return(['registration_id'])
+        Game.any_instance.should_receive(:update_attributes).and_return(true)
+        controller.stub(:find_game).and_return(
+            Game.new(
+                {
+                    id: 1,
+                    actual_game: {result: 'result'},
+                    game_type: 'NETWORK',
+                    game_status: 'IN_PROGRESS',
+                    white_player: User.new({id: 1}),
+                    black_player: User.new({id: 2})
+
+                }
+            )
+        )
+        post :draw, {id: '1', opponent_id: '1', game_status: 'DRAW'}
+        response.status.should eq(200)
+
+      end
+
+    end
+    describe 'with invalid params'do
+      it 'returns 406 Not acceptable response status' do
+        controller.stub(:find_game).and_return(
+            Game.new(
+                {
+                    id: 1,
+                    actual_game: {result: 'result'},
+                    game_type: 'NETWORK',
+                    game_status: 'IN_PROGRESS',
+                    white_player: User.new({id: 1}),
+                    black_player: User.new({id: 2})
+
+                }
+            )
+        )
+        post :draw, {id: '1', opponent_id: '1', game_status: 'INVALID'}
+        response.status.should eq(406)
+      end
+    end
+  end
+
   describe 'POST add_moves' do
     describe 'with valid params' do
       it 'adds game moves and returns 200 OK response status code' do

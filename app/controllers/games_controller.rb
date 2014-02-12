@@ -1,9 +1,11 @@
 class GamesController < ApplicationController
-  before_action :set_game, only: [:show, :update, :destroy, :add_moves]
+  before_action :set_game, only: [:show, :update, :destroy, :add_moves, :draw]
 
   SHORT_GAME_VIEW = [:id, :game_type, :game_status, :white_player_id, :black_player_id, :date_started, :date_finished, :actual_game]
   GCM_API_KEY = 'AIzaSyCAPZQ7GDiVXSdLPMeYNhTz6hbO6Q3Rdao'
   GAME_TERMINATION_EVENTS = %w(WHITE_RESIGNED BLACK_RESIGNED WHITE_WON BLACK_WON)
+  DRAW_STATUSES = %w(WHITE_OFFER_DRAW BLACK_OFFER_DRAW DRAW)
+  DRAW = 'DRAW'
 
   def index
     @user_id = params[:user_id]
@@ -47,14 +49,45 @@ class GamesController < ApplicationController
             end
           end
 
-          format.html { redirect_to @game, notice: 'Game was successfully created.' }
           format.json { render json: @game, status: :created }
         else
-          format.html { render action: 'new' }
           format.json { render json: @game.errors, status: :unprocessable_entity }
         end
       rescue => ex
         format.json { render json: {error: ex, message: ex.message}, status: :bad_request }
+      end
+    end
+  end
+
+
+  def draw
+    unless DRAW_STATUSES.include?(params[:game_status])
+      render json: 'Error: game_status is invalid.', status: :not_acceptable
+      return
+    end
+
+    options = {
+        data: {
+            game_id: @game.id,
+            event: params[:game_status],
+        },
+        collapse_key: 'draw'
+    }
+
+    #handle 'offer draw' situation
+    devices, registration_ids = find_devices_and_registrations_ids(params[:opponent_id])
+    send_gcm_notification(devices, registration_ids, options) if registration_ids.any?
+
+    #handle draw acceptance - just set game_finished date and save it db. Also send notification to the opponent, who offered the draw
+    respond_to do |format|
+      if DRAW == params[:game_status]
+        if @game.update_attributes({date_finished: Time.now})
+          format.json { render json: 'Draw offer was accepted', status: :ok }
+        else
+          format.json { render json: 'Error during draw game update', status: :conflict }
+        end
+      else
+        format.json { render json: 'Draw offer was successfully sent', status: :ok }
       end
     end
   end
@@ -111,10 +144,8 @@ class GamesController < ApplicationController
         attributes_to_update[:date_finished] = Time.now
       end
       if @game.update_attributes(attributes_to_update)
-        format.html { redirect_to @game, notice: 'Move was successfully added.' }
         format.json { render json: @game.actual_game, status: :ok }
       else
-        format.html { render action: 'edit' }
         format.json { render json: @game.errors, status: :unprocessable_entity }
       end
     end
@@ -124,10 +155,8 @@ class GamesController < ApplicationController
     respond_to do |format|
       begin
         if @game.update(game_params)
-          format.html { redirect_to @game, notice: 'Game was successfully updated.' }
           format.json { render json: @game, status: :ok }
         else
-          format.html { render action: 'edit' }
           format.json { render json: @game.errors, status: :unprocessable_entity }
         end
       rescue => ex
@@ -161,6 +190,11 @@ class GamesController < ApplicationController
 
   def find_opponent(game, user_id)
     game.white_player.id == user_id.to_i ? game.black_player : game.white_player
+  end
+
+  def find_devices_and_registrations_ids(user_id)
+    devices = Device.where(user_id: user_id)
+    return devices, devices.pluck(:registration_id)
   end
 
   def handle_canonical_ids(devices, registration_ids, google_response)
