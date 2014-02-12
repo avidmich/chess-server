@@ -106,7 +106,7 @@ describe GamesController do
         GCM.any_instance.should_receive(:send_notification)
         Device.should_receive(:where).with(user_id: '1').and_return([Device.new({id: 1, registration_id: 'registration_id', user_id: 1})])
         Array.any_instance.stub(:pluck).and_return(['registration_id'])
-        Game.any_instance.should_not_receive(:update_attributes)
+        Game.any_instance.should_receive(:update_attributes).and_return(true)
         controller.stub(:find_game).and_return(
             Game.new(
                 {

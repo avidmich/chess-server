@@ -4,7 +4,7 @@ class GamesController < ApplicationController
   SHORT_GAME_VIEW = [:id, :game_type, :game_status, :white_player_id, :black_player_id, :date_started, :date_finished, :actual_game]
   GCM_API_KEY = 'AIzaSyCAPZQ7GDiVXSdLPMeYNhTz6hbO6Q3Rdao'
   GAME_TERMINATION_EVENTS = %w(WHITE_RESIGNED BLACK_RESIGNED WHITE_WON BLACK_WON)
-  DRAW_STATUSES = %w(WHITE_OFFER_DRAW BLACK_OFFER_DRAW DRAW)
+  DRAW_STATUSES = %w(WHITE_OFFER_DRAW BLACK_OFFER_DRAW)
   DRAW = 'DRAW'
 
   def index
@@ -61,15 +61,18 @@ class GamesController < ApplicationController
 
 
   def draw
-    unless DRAW_STATUSES.include?(params[:game_status])
+    unless DRAW_STATUSES.include?(params[:game_status]) or DRAW == params[:game_status]
       render json: 'Error: game_status is invalid.', status: :not_acceptable
       return
     end
-
+    opponent = find_opponent(@game, params[:opponent_id])
     options = {
         data: {
             game_id: @game.id,
             event: params[:game_status],
+            opponent_id: opponent.id,
+            opponent_first_name: opponent.first_name,
+            opponent_last_name: opponent.last_name,
         },
         collapse_key: 'draw'
     }
@@ -80,16 +83,24 @@ class GamesController < ApplicationController
 
     #handle draw acceptance - just set game_finished date and save it db. Also send notification to the opponent, who offered the draw
     respond_to do |format|
+      update_attributes = {}
+
       if DRAW == params[:game_status]
-        if @game.update_attributes({date_finished: Time.now})
-          format.json { render json: 'Draw offer was accepted', status: :ok }
-        else
-          format.json { render json: 'Error during draw game update', status: :conflict }
-        end
-      else
-        format.json { render json: 'Draw offer was successfully sent', status: :ok }
+        update_attributes = {date_finished: Time.now, game_status: DRAW}
       end
+
+      if DRAW_STATUSES.include?(params[:game_status])
+        update_attributes = {event: params[:game_status]}
+      end
+
+      if @game.update_attributes(update_attributes)
+        format.json { render json: {}, status: :ok }
+      else
+        format.json { render json: 'Error during draw game update', status: :conflict }
+      end
+
     end
+
   end
 
 
@@ -226,4 +237,5 @@ class GamesController < ApplicationController
       white_list[:actual_game] = params[:game][:actual_game] #this construction allow us to accept any nested json structure inside :actual_game
     end
   end
+
 end
