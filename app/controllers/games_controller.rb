@@ -90,7 +90,7 @@ class GamesController < ApplicationController
       end
 
       if DRAW_STATUSES.include?(params[:game_status])
-        update_attributes = {event: params[:game_status]}
+        update_attributes = {event: params[:game_status], game_status: params[:game_status]}
       end
 
       if @game.update_attributes(update_attributes)
