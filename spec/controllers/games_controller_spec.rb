@@ -167,6 +167,30 @@ describe GamesController do
         post :draw, {id: '1', opponent_id: '1', game_status: 'INVALID'}
         response.status.should eq(406)
       end
+
+      it 'returns 409 Conflict in case of problem with persistence'do
+        GCM.any_instance.stub(:send_notification).and_return({body: {success: 1, canonical_ids: 0, failure: 0}.to_json, response: 'success', })
+        GCM.any_instance.should_receive(:send_notification)
+        Device.should_receive(:where).with(user_id: '1').and_return([Device.new({id: 1, registration_id: 'registration_id', user_id: 1})])
+        Array.any_instance.stub(:pluck).and_return(['registration_id'])
+        Game.any_instance.should_receive(:update_attributes).and_return(false)
+        controller.stub(:find_game).and_return(
+            Game.new(
+                {
+                    id: 1,
+                    actual_game: {result: 'result'},
+                    game_type: 'NETWORK',
+                    game_status: 'IN_PROGRESS',
+                    white_player: User.new({id: 1}),
+                    black_player: User.new({id: 2})
+
+                }
+            )
+        )
+        post :draw, {id: '1', opponent_id: '1', game_status: 'DRAW'}
+        response.status.should eq(409)
+      end
+
     end
   end
 
