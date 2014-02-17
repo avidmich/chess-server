@@ -61,7 +61,7 @@ class GamesController < ApplicationController
 
 
   def draw
-    unless DRAW_STATUSES.include?(params[:game_status]) or DRAW == params[:game_status]
+    unless DRAW_STATUSES.include?(params[:game_status]) or DRAW == params[:game_status] or 'IN_PROGRESS' == params[:game_status]
       render json: 'Error: game_status is invalid.', status: :not_acceptable
       return
     end
@@ -83,14 +83,14 @@ class GamesController < ApplicationController
 
     #handle draw acceptance - just set game_finished date and save it db. Also send notification to the opponent, who offered the draw
     respond_to do |format|
-      update_attributes = {}
+      update_attributes = {game_status: params[:game_status]}
 
       if DRAW == params[:game_status]
-        update_attributes = {date_finished: Time.now, game_status: DRAW}
+        update_attributes[:date_finished] = Time.now
       end
 
       if DRAW_STATUSES.include?(params[:game_status])
-        update_attributes = {event: params[:game_status], game_status: params[:game_status]}
+        update_attributes[:event] = params[:game_status]
       end
 
       if @game.update_attributes(update_attributes)

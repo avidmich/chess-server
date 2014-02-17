@@ -147,7 +147,28 @@ describe GamesController do
         response.status.should eq(200)
 
       end
+      it 'notifies opponent that draw is declined and returns 200 OK response' do
+        GCM.any_instance.stub(:send_notification).and_return({body: {success: 1, canonical_ids: 0, failure: 0}.to_json, response: 'success', })
+        GCM.any_instance.should_receive(:send_notification)
+        Device.should_receive(:where).with(user_id: '1').and_return([Device.new({id: 1, registration_id: 'registration_id', user_id: 1})])
+        Array.any_instance.stub(:pluck).and_return(['registration_id'])
+        Game.any_instance.should_receive(:update_attributes).with( game_status: 'IN_PROGRESS').and_return(true)
+        controller.stub(:find_game).and_return(
+            Game.new(
+                {
+                    id: 1,
+                    actual_game: {result: 'result'},
+                    game_type: 'NETWORK',
+                    game_status: 'WHITE_OFFER_DRAW',
+                    white_player: User.new({id: 1}),
+                    black_player: User.new({id: 2})
 
+                }
+            )
+        )
+        post :draw, {id: '1', opponent_id: '1', game_status: 'IN_PROGRESS'}
+        response.status.should eq(200)
+      end
     end
     describe 'with invalid params'do
       it 'returns 406 Not acceptable response status' do
